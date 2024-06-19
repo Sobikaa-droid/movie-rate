@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     "debug_toolbar",
     'apps.users',
+    'apps.movies',
 ]
 
 MIDDLEWARE = [

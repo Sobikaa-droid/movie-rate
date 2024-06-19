@@ -27,4 +27,5 @@ urlpatterns = [
     path('', views.home, name='home'),
 
     path('users/', include(('apps.users.urls', 'users'))),
+    path('movies/', include(('apps.movies.urls', 'movies'))),
 ]

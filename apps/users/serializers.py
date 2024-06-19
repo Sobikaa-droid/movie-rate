@@ -1,12 +1,12 @@
 # your_app/serializers.py
-from djoser.serializers import UserCreateSerializer, UserSerializer
+from djoser.serializers import UserSerializer
 from .models import TunedUser
 
 
-class CustomUserCreateSerializer(UserCreateSerializer):
+""" class CustomUserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         model = TunedUser
-        fields = ('id', 'email', 'password')
+        fields = ('id', 'email', 'password') """
 
 
 class CustomUserSerializer(UserSerializer):
