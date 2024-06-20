@@ -23,11 +23,11 @@ class Movie(models.Model):
     def __str__(self):
         return f'{self.title} ({self.year})'
     
-    def save(self, *args, **kwargs):
+"""     def save(self, *args, **kwargs):
         title = slugify(str(self.title))
         year = int(self.year)
         response = requests.get(f'https://www.omdbapi.com/?t={title}&year={year}&apikey=9a6fa81f')
         self.poster = response.json().get('Poster')
 
-        super().save(*args, **kwargs)
+        super().save(*args, **kwargs) """
 
