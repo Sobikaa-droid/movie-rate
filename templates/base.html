@@ -15,17 +15,17 @@
   <body>
     <nav class="navbar navbar-expand-lg sticky-top">
       <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}">OMDB</a>
+        <a class="navbar-brand" href="{% url 'home' %}">CINEMA</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item ms-5">
-              <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/races/' %} nav-link-active active {% endif %}" href="">Movies</a>
+              <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/movies/' %} nav-link-active active {% endif %}" href="{% url 'movies:list' %}">Movies</a>
             </li>
             <li class="nav-item ms-5">
-              <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/racers/' %} nav-link-active active {% endif %}" href="">Users</a>
+              <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/users/' %} nav-link-active active {% endif %}" href="">Users</a>
             </li>
           </ul>
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0 mt-2">

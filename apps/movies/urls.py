@@ -13,4 +13,6 @@ urlpatterns = [
     path('api/list/', views.MovieAPIListView.as_view(), name='api_movie_list'),
     path('api/detail/<int:pk>/', views.MovieAPIRetrieveDestroyView.as_view(), name='api_movie_retrievedestroy'),
     # generic
+    path('', views.MovieListView.as_view(), name='list'),
+    path('detail/<int:pk>', views.MovieDetailView.as_view(), name='detail'),
 ]

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}{{ movie.title }}{% endblock %}
+{% load static %}
+{% block content %}
+{% load widget_tweaks %}
+<div class="container">
+   <div class="page_detail d-flex justify-content-center">
+      <div class='page_detail_info flex-grow-1'>
+         <div class="d-flex">
+            <h1 class="page_title">{{ movie.title }}</h1>
+         </div>
+         <p class="page_description text-secondary lh-base">{{ movie.plot|striptags|truncatechars:500 }}</p>
+         {% if movie.plot|length >= 501 %}
+         <p>
+            <a class="btn btn-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-description">
+            Read Full Plot
+            </a>
+         </p>
+         <!-- Modal Show Description -->
+         <div class="modal fade" id="modal-show-description" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <h5 class="modal-title" id="ClearCartModalLabel">Description</h5>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                     <p>{{ movie.plot }}</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+         {% endif %}
+         <!-- ############ -->
+         <table class="table table-borderless" data-bs-theme="light">
+            <tbody>
+              <tr>
+                <th scope="row" class="text-dark">Rating</th>
+                <td class="{% if movie.rating < 5 %} text-danger {% elif movie.rating < 7 %} text-warning {% else %} text-success {% endif %}">{{ movie.rating }}</td>
+              </tr>
+              <tr>
+                 <th scope="row" class="text-dark">Genre</th>
+                 <td class="text-secondary">{% for obj in movie.genre %}{{ obj }}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
+              </tr>
+              <tr>
+                <th scope="row" class="text-dark">Country</th>
+                <td class="text-secondary">{{ movie.country }}</td>
+              </tr>
+              <tr>
+                <th scope="row" class="text-dark">Director</th>
+                <td class="text-secondary">{{ movie.director }}</td>
+              </tr>
+              <tr>
+                <th scope="row" class="text-dark">Year</th>
+                <td class="text-secondary">{{ movie.year }}</td>
+              </tr>
+              <tr>
+                <th scope="row" class="text-dark">Runtime</th>
+                <td class="text-secondary">{{ movie.runtime }} min</td>
+              </tr>
+              <tr>
+               <th scope="row" class="text-dark">Actors</th>
+               <td class="text-secondary">{% for obj in movie.actors %}{{ obj }}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
+              </tr>
+              <tr>
+               <th scope="row" class="text-dark">Production</th>
+               <td class="text-secondary">{{ movie.production }}</td>
+              </tr>
+            </tbody>
+         </table>
+      </div>
+      <div class="flex-shrink-0 page_detail_image_div">
+         <img class="page_detail_image" src="{{ movie.poster }}">
+      </div>
+   </div>
+   <div class="mb-5">
+      <h1 class="page_other mb-4">Other movies</h1>
+      <div class="row row-cols-xxl-5 row-cols-xl-5 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-4">
+         {% for movie in movies|slice:"0:5" %}
+         <div class="col">
+            <div class="card bg-transparent">
+               <a href="{{ movie.get_absolute_url }}" class="card_image_link text-decoration-none">
+               <img src="{{ movie.poster }}" class="card-img-top card_gradient page_detail_other_image">
+               </a>
+            </div>
+         </div>
+         {% endfor %}
+      </div>
+   </div>
+</div>
+{% endblock %}

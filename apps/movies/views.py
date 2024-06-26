@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404, render
 from django.db import transaction
+from django.views import generic
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
@@ -10,6 +11,8 @@ from .models import Movie
 from .permissions import IsStaffUser, IsStaffUserOrReadOnly
 from .serializers import MovieSerializer, MovieCreateSerializer, MovieCreateListSerializer
 
+
+# API API API
 
 class ListPagination(PageNumberPagination):
     page_size = 5
@@ -111,4 +114,34 @@ class CreateMovieListAPIView(APIView):
                 )
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+
+# GENERIC GENERIC GENERIC
+
+class MovieListView(generic.ListView):
+    model = Movie
+    context_object_name = 'movies'
+    paginate_by = 10
+    template_name = "movies/movie_list.html"
+
+"""     def get_queryset(self):
+        return super().get_queryset().filter(completion_date__isnull=True).order_by('-pk').annotate(
+            racers_count=Count('racers'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_name'] = 'Active'
+
+        return context """
+
+
+class MovieDetailView(generic.DetailView):
+    model = Movie
+    context_object_name = 'movie'
+    template_name = 'movies/movie_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).all().order_by('?')
+        return context
+
