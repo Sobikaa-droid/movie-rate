@@ -17,6 +17,10 @@ footer {
   background: linear-gradient(90deg, rgba(220,140,169,1) 0%, rgba(218,149,110,1) 50%, rgba(220,140,169,1) 100%);
 }
 
+h1 {
+  color: black;
+}
+
 .badge {
   display: inline;
 }
@@ -33,40 +37,67 @@ footer {
   color: #c9c9c9;
 }
 
+.text-dark {
+  color: black !important;
+}
+
 .text-success {
-  color: #75d973 !important;
+  color: #00de0b !important;
 }
 
-.text-danger {
-  color: #d97373 !important;
+.btn-dark {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: black;
+  --bs-btn-border-color: black;
+  --bs-btn-hover-color: black;
+  --bs-btn-hover-bg: white;
+  --bs-btn-hover-border-color: black;
+  --bs-btn-focus-shadow-rgb: 66, 70, 73;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: black;
+  --bs-btn-active-border-color: black;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #212529;
+  --bs-btn-disabled-border-color: #212529;
 }
 
-.bg-success {
-  background-color: #75d973 !important;
+.btn-outline-dark {
+  --bs-btn-color: black;
+  --bs-btn-border-color: black;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: black;
+  --bs-btn-hover-border-color: black;
+  --bs-btn-focus-shadow-rgb: 33, 37, 41;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: black;
+  --bs-btn-active-border-color: black;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: black;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: black;
+  --bs-gradient: none;
 }
 
-.bg-danger {
-  background-color: #d97373 !important;
+.btn-outline-white {
+  --bs-btn-color: black;
+  --bs-btn-border-color: black;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: black;
+  --bs-btn-hover-border-color: black;
+  --bs-btn-focus-shadow-rgb: 33, 37, 41;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: black;
+  --bs-btn-active-border-color: black;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: black;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: black;
+  --bs-gradient: none;
 }
 
-.bg-coffee, .bg-orange {
-  background: rgb(220,140,169);
-  background: linear-gradient(90deg, rgba(220,140,169,1) 0%, rgba(218,149,110,1) 100%, rgba(220,140,169,1) 100%);
-}
-
-.text-coffee {
-  color: rgb(220,140,169);
-}
-
-.btn-primary {
-  background: rgb(220,140,169);
-  background: linear-gradient(90deg, rgba(220,140,169,1) 0%, rgba(218,149,110,1) 100%, rgba(220,140,169,1) 100%);
-  border: none;
-  transition: 0.15s;
-}
-
-.btn-primary:hover {
-  opacity: 0.8;
+.bg-dark {
+  background-color: black !important;
 }
 
 .feature_image {
@@ -150,7 +181,7 @@ footer {
   width: 100%;
   height: 150px;
   background-position: center;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .banner_image_home {
@@ -158,11 +189,11 @@ footer {
   height: 150px;
   background-position: center;
   opacity: 1;
-  background-image: url(cinema.gif);
+  background-image: url(movies.jpg);
 }
 
 .banner_image_pages {
-  background-image: url(daniel-savage-04-1400x788.gif);
+  background-image: url(movies.jpg);
 }
 
 .banner_image_about {
@@ -178,6 +209,12 @@ footer {
   font-weight: 600;
   letter-spacing: .09em;
   text-transform: uppercase;
+}
+
+/* ROW */
+
+.col img {
+  max-width: 100%; /* This ensures the image fits inside the column */
 }
 
 /* CARDS */
@@ -249,10 +286,10 @@ footer {
 .pagination {
     --bs-pagination-font-size: 1.2rem;
     --bs-pagination-color: #495057;
-    --bs-pagination-hover-color: #212529;
-    --bs-pagination-focus-color: #212529;
+    --bs-pagination-hover-color: black;
+    --bs-pagination-focus-color: black;
     --bs-pagination-active-color: #fff;
-    --bs-pagination-active-bg: #212529;
+    --bs-pagination-active-bg: black;
     --bs-pagination-active-border-color: #212529;
 }
 

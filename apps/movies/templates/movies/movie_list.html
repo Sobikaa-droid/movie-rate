@@ -24,9 +24,9 @@
    {% if not movies %}
    <h3 class="text-center mt-5">No movies found.</h3>
    {% endif %}
-   <div class="row row-cols-2 row-cols-lg-5 gy-5 gx-0">
+   <div class="row row-cols-2 row-cols-lg-5 gy-5 gx-5 text-center">
       {% for movie in movies %}
-      <div class="col text-center">
+      <div class="col">
          <a href="{{ movie.get_absolute_url }}" class="card_image_link text-decoration-none">   
          <img src="{{ movie.poster }}" class="card_image">
          </a>
