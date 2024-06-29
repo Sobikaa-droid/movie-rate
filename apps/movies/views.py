@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404, render
 from django.db import transaction
 from django.views import generic
+from django.utils.text import slugify
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 import requests
+from decimal import Decimal
 
 from .models import Movie
 from .permissions import IsStaffUser, IsStaffUserOrReadOnly
@@ -55,16 +57,19 @@ class CreateMovieAPIView(APIView):
                 
                 obj, created = Movie.objects.get_or_create(
                         title=response.get('Title', 'N/A'),
-                        year=int(response.get('Year', '0')[0:4]) if response.get('Year') != 'N/A' else 0,
-                        genre=response.get('Genre', 'N/A').split(", "),
-                        rating=float(response.get('imdbRating', 0)) if response.get('imdbRating') != 'N/A' else float(0),
-                        director=response.get('Director', 'N/A'),
-                        actors=response.get('Actors', 'N/A').split(", "),
-                        plot=response.get('Plot', 'N/A'),
-                        poster=response.get('Poster', 'N/A'),
-                        runtime=int(response.get('Runtime', '0').replace(" min", "")) if response.get('Runtime') != 'N/A' else 0,
-                        country=response.get('Country', 'N/A'),
-                        production=response.get('Production', 'N/A'),
+                        year=response.get('Year', 'N/A'),
+                        defaults={
+                            'genre': response.get('Genre', 'N/A').split(", "),
+                            'rating': float(response.get('imdbRating', 0)) if response.get('imdbRating') != 'N/A' else float(0),
+                            'director': response.get('Director', 'N/A'),
+                            'actors': response.get('Actors', 'N/A').split(", "),
+                            'plot': response.get('Plot', 'N/A'),
+                            'poster': response.get('Poster', 'N/A'),
+                            'runtime': response.get('Runtime', 'N/A'),
+                            'country': response.get('Country', 'N/A'),
+                            'type': response.get('Type', 'N/A'),
+                            'total_seasons': response.get('totalSeasons', 'N/A'),
+                        }
                 )
                 if created:
                     return Response(
@@ -88,33 +93,74 @@ class CreateMovieListAPIView(APIView):
         with transaction.atomic():
             serializer = MovieCreateListSerializer(data=request.data)
             if serializer.is_valid():
-                limit = serializer.validated_data.get('limit')
-                response = requests.get(f'https://freetestapi.com/api/v1/movies?limit={limit}').json()
-                for movie in response:
-                    title = movie.get('title')
-                    year = movie.get('year')
-                    response_2 = requests.get(f'https://www.omdbapi.com/?t={title}&year={year}&apikey=9a6fa81f').json()
-                    Movie.objects.get_or_create(
-                        title=title,
-                        year=year,
-                        genre=movie.get('genre', 'N/A'),
-                        rating=movie.get('rating', 0) if movie.get('rating') != 'N/A' else 0,
-                        director=movie.get('director', 'N/A'),
-                        actors=movie.get('actors', 'N/A'),
-                        plot=movie.get('plot', 'N/A'),
-                        poster=response_2.get('Poster', 'N/A'),
-                        runtime=movie.get('runtime', 0) if movie.get('runtime') != 'N/A' else 0,
-                        country=movie.get('country', 'N/A'),
-                        production=movie.get('production', 'N/A'),
+                response_data = {}
+                movies_list = [
+                    'Iron Man', 'Game of Thrones', 'The Boys', 'Invincible', 'Avengers', 'Thor', 'Iron Man 2',
+                    'Dune', 'Pulp Fiction', 'Avatar', 'Drive', 'Transformers', 'The Dark Knight', 'Oblivion',
+                    'There Will Be Blood', 'The Hunt', 'Moneyball', 'Finding Nemo', 'Cars', 'Star Wars', 'Get Out',
+                    'The Batman', 'Breaking Bad', 'True Detective', 'Pirates of the Caribbean',
+                ]
+                limit = int(serializer.validated_data.get('limit'))
+                for title in movies_list[0:limit]:
+                    response = requests.get(f'https://www.omdbapi.com/?t={slugify(title)}&apikey=9a6fa81f').json()
+
+                    obj, created = Movie.objects.get_or_create(
+                        title=response.get('Title', 'N/A'),
+                        year=response.get('Year', 'N/A'),
+                        defaults={
+                            'genre': response.get('Genre', 'N/A').split(", "),
+                            'rating': float(response.get('imdbRating', 0)) if response.get('imdbRating') != 'N/A' else float(0),
+                            'director': response.get('Director', 'N/A'),
+                            'actors': response.get('Actors', 'N/A').split(", "),
+                            'plot': response.get('Plot', 'N/A'),
+                            'poster': response.get('Poster', 'N/A'),
+                            'runtime': response.get('Runtime', 'N/A'),
+                            'country': response.get('Country', 'N/A'),
+                            'type': response.get('Type', 'N/A'),
+                            'total_seasons': response.get('totalSeasons', 'N/A'),
+                        }
                     )
+                    if created:
+                        response_data.update({title: 'created'})
+                    else:
+                        response_data.update({title: 'exists'})
 
                 return Response(
-                    {'success': f'Successfully created {limit} movies.'},
+                    {'success': response_data},
                     status=status.HTTP_200_OK
-                )
+                    )    
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class UpdateMovieListAPIView(APIView):
+    permission_classes = [IsStaffUser]
+
+    def post(self, request):
+        with transaction.atomic():
+            qs = Movie.objects.all()
+            for movie in qs:
+                response = requests.get(f'https://www.omdbapi.com/?t={slugify(movie.title)}&year={slugify(movie.year)}&apikey=9a6fa81f').json()
+                
+                movie.title=response.get('Title', 'N/A')
+                movie.year=response.get('Year', 'N/A')
+                movie.genre=response.get('Genre', 'N/A').split(", ")
+                movie.rating=float(response.get('imdbRating', 0)) if response.get('imdbRating') != 'N/A' else float(0)
+                movie.director=response.get('Director', 'N/A')
+                movie.actors=response.get('Actors', 'N/A').split(", ")
+                movie.plot=response.get('Plot', 'N/A')
+                movie.poster=response.get('Poster', 'N/A')
+                movie.runtime=response.get('Runtime', 'N/A')
+                movie.country=response.get('Country', 'N/A')
+                movie.type=response.get('Type', 'N/A').capitalize()
+                movie.total_seasons=response.get('totalSeasons', 'N/A')
+            
+                movie.save()
+
+            return Response(
+                {'success': f'Successfully updated all movies.'},
+                status=status.HTTP_200_OK
+            )
 
 # GENERIC GENERIC GENERIC
 
@@ -123,16 +169,6 @@ class MovieListView(generic.ListView):
     context_object_name = 'movies'
     paginate_by = 10
     template_name = "movies/movie_list.html"
-
-"""     def get_queryset(self):
-        return super().get_queryset().filter(completion_date__isnull=True).order_by('-pk').annotate(
-            racers_count=Count('racers'))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['object_name'] = 'Active'
-
-        return context """
 
 
 class MovieDetailView(generic.DetailView):
@@ -144,4 +180,3 @@ class MovieDetailView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).all().order_by('?')
         return context
-

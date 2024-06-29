@@ -48,6 +48,16 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row" class="text-dark">Type</th>
+                        <td class="text-secondary">{{ movie.type|capfirst }}</td>
+                    </tr>
+                    {% if movie.type|capfirst == 'Series' %}
+                    <tr>
+                        <th scope="row" class="text-dark">Seasons</th>
+                        <td class="text-secondary">{{ movie.total_seasons }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
                         <th scope="row" class="text-dark">Genre</th>
                         <td class="text-secondary">{% for obj in movie.genre %}{{ obj }}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
                     </tr>
@@ -65,15 +75,11 @@
                     </tr>
                     <tr>
                         <th scope="row" class="text-dark">Runtime</th>
-                        <td class="text-secondary">{{ movie.runtime }} min</td>
+                        <td class="text-secondary">{{ movie.runtime }}</td>
                     </tr>
                     <tr>
                         <th scope="row" class="text-dark">Actors</th>
                         <td class="text-secondary">{% for obj in movie.actors %}{{ obj }}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row" class="text-dark">Production</th>
-                        <td class="text-secondary">{{ movie.production }}</td>
                     </tr>
                 </tbody>
             </table>

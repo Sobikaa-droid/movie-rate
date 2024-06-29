@@ -6,16 +6,17 @@ import requests
 
 class Movie(models.Model):
     title = models.CharField(max_length=350)
-    year = models.IntegerField()
+    year = models.CharField(max_length=25)
     genre = models.JSONField()
     rating = models.DecimalField(max_digits=10, decimal_places=1)
     director = models.CharField(max_length=150)
     actors = models.JSONField()
     plot = models.TextField(max_length=9999)
     poster = models.URLField()
-    runtime = models.IntegerField()
+    runtime = models.CharField(max_length=25)
     country = models.CharField(max_length=100)
-    production = models.CharField(max_length=200)
+    type = models.CharField(max_length=50)
+    total_seasons = models.CharField(blank=True, null=True, max_length=30)
 
 
     class Meta:
