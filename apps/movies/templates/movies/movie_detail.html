@@ -35,19 +35,6 @@
             <table class="table table-borderless" data-bs-theme="light">
                 <tbody>
                     <tr>
-                        <th scope="row" class="text-dark">Rating</th>
-                        <td>
-                            {% for i in '0123456789'|make_list %}
-                            {% if forloop.counter <= movie.rating|floatformat:"0"|add:"0" %}
-                            <i class="fa-solid fa-star text-warning"></i>
-                            {% else %}
-                            <i class="fa-solid fa-star text-secondary"></i>
-                            {% endif %}
-                            {% endfor %}
-                            ( <strong class="{% if movie.rating < 5 %} text-danger {% elif movie.rating < 7 %} text-warning {% else %} text-success {% endif %}">{{ movie.rating }}</strong> )
-                        </td>
-                    </tr>
-                    <tr>
                         <th scope="row" class="text-dark">Type</th>
                         <td class="text-secondary">{{ movie.type|capfirst }}</td>
                     </tr>
@@ -87,6 +74,24 @@
         <div class="flex-shrink-0 page_detail_image_div">
             <img class="page_detail_image" src="{{ movie.poster }}" />
         </div>
+    </div>
+    <div class="mb-5">
+        <h1 class="page_other mb-3">Rating IMDb</h1>
+        <div class='d-flex rating_div mb-2'>
+            <div class='stars me-3'>
+                {% for i in '0123456789'|make_list %}
+                {% if forloop.counter <= imdb_rating|floatformat:"0"|add:"0" %}
+                <h2 class="fa-solid fa-star text-orange"></h2>
+                {% else %}
+                <h2 class="fa-solid fa-star text-secondary"></h2>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <div class='rating'>
+                <h1 class="rating_text {% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% else %} text-success {% endif %}">{{ movie.rating }}</h1>
+            </div>
+        </div>
+        <p class='text-secondary'>{{ votes }} votes</p>
     </div>
     <div class="mb-5">
         <h1 class="page_other mb-4">Other movies</h1>

@@ -179,4 +179,8 @@ class MovieDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).all().order_by('?')
+        response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f').json()
+        context['votes'] = response.get('imdbVotes', 'N/A')
+        context['imdb_rating'] = float(response.get('imdbRating', '0'))
+
         return context

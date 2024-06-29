@@ -42,7 +42,11 @@ h1 {
 }
 
 .text-success {
-  color: #00de0b !important;
+  color: #3bb33b !important;
+}
+
+.text-orange {
+  color: #ff5500;
 }
 
 .btn-dark {
@@ -295,8 +299,18 @@ h1 {
 
 /* DETAIL */
 
+.rating_div {
+  display: flex;
+  align-items: center;
+}
+
+.rating_text {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
 .page_detail {
-  margin: 4rem 0 4rem 0;
+  margin: 4rem 0 2rem 0;
 }
 
 .page_title {
