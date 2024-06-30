@@ -75,23 +75,43 @@
             <img class="page_detail_image" src="{{ movie.poster }}" />
         </div>
     </div>
-    <div class="mb-5">
-        <h1 class="page_other mb-3">Rating IMDb</h1>
-        <div class='d-flex rating_div mb-2'>
-            <div class='stars me-3'>
-                {% for i in '0123456789'|make_list %}
-                {% if forloop.counter <= imdb_rating|floatformat:"0"|add:"0" %}
-                <h2 class="fa-solid fa-star text-orange"></h2>
-                {% else %}
-                <h2 class="fa-solid fa-star text-secondary"></h2>
-                {% endif %}
-                {% endfor %}
+    <div class="mb-5 d-flex">
+        <div class='imdb_rating'>
+            <h1 class="page_other mb-3">IMDb Rating</h1>
+            <div class='d-flex rating_div mb-2'>
+                <div class='stars me-3'>
+                    {% for i in '0123456789'|make_list %}
+                    {% if forloop.counter <= imdb_rating|floatformat:"0"|add:"0" %}
+                    <h2 class="fa-solid fa-star text-orange"></h2>
+                    {% else %}
+                    <h2 class="fa-solid fa-star text-secondary"></h2>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <div class='rating'>
+                    <h1 class="rating_text {% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% else %} text-success {% endif %}">{{ movie.rating }}</h1>
+                </div>
             </div>
-            <div class='rating'>
-                <h1 class="rating_text {% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% else %} text-success {% endif %}">{{ movie.rating }}</h1>
-            </div>
+            <p class='text-secondary'>{{ imdb_votes }} votes</p>
         </div>
-        <p class='text-secondary'>{{ votes }} votes</p>
+        <div class='site_rating'>
+            <h1 class="page_other mb-3">Site Rating</h1>
+            <div class='d-flex rating_div mb-2'>
+                <div class='stars me-3'>
+                    {% for i in '0123456789'|make_list %}
+                    {% if forloop.counter <= imdb_rating|floatformat:"0"|add:"0" %}
+                    <h2 class="fa-solid fa-star text-orange"></h2>
+                    {% else %}
+                    <h2 class="fa-solid fa-star text-secondary"></h2>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <div class='rating'>
+                    <h1 class="rating_text {% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% else %} text-success {% endif %}">{{ movie.rating }}</h1>
+                </div>
+            </div>
+            <p class='text-secondary'>{{ imdb_votes }} votes</p>
+        </div>
     </div>
     <div class="mb-5">
         <h1 class="page_other mb-4">Other movies</h1>

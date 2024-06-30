@@ -176,6 +176,11 @@ h1 {
   border-width: 0;
 }
 
+.nav_filter_by .nav-link {
+  padding: 8px 0 0px 0px;
+}
+
+
 /* BANNER */
 #banner {
   position: relative;
@@ -380,6 +385,10 @@ h1 {
 .page_other {
   font-weight: 600;
   font-size: 2.5rem;
+}
+
+.imdb_rating {
+  margin: 0 10rem 0 0;
 }
 
 /* RATE */

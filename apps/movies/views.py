@@ -152,7 +152,7 @@ class UpdateMovieListAPIView(APIView):
                 movie.poster=response.get('Poster', 'N/A')
                 movie.runtime=response.get('Runtime', 'N/A')
                 movie.country=response.get('Country', 'N/A')
-                movie.type=response.get('Type', 'N/A').capitalize()
+                movie.type=response.get('Type', 'N/A')
                 movie.total_seasons=response.get('totalSeasons', 'N/A')
             
                 movie.save()
@@ -170,6 +170,21 @@ class MovieListView(generic.ListView):
     paginate_by = 10
     template_name = "movies/movie_list.html"
 
+    def get_queryset(self):
+        qs = super().get_queryset().all()
+
+        filter_val = self.request.GET.get('filter_val', None)
+        search_val = self.request.GET.get('search_val', None)
+        order_val = self.request.GET.get('order_by', None)
+        if filter_val:
+            qs = qs.filter(type__icontains=filter_val)
+        if search_val:
+            qs = qs.filter(title__icontains=search_val)
+        if order_val:
+            qs = qs.order_by(order_val)
+
+        return qs
+
 
 class MovieDetailView(generic.DetailView):
     model = Movie
@@ -180,7 +195,7 @@ class MovieDetailView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).all().order_by('?')
         response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f').json()
-        context['votes'] = response.get('imdbVotes', 'N/A')
+        context['imdb_votes'] = response.get('imdbVotes', 'N/A')
         context['imdb_rating'] = float(response.get('imdbRating', '0'))
 
         return context
