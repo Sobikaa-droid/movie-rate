@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}{{ auth_type }}{% endblock %}
+{% block content %}
+{% load widget_tweaks %}
+<div class="container mt-5 mb-5 d-flex justify-content-center user_form">
+  <div class="mt-5">
+    <h1 class="mb-3 text-center">{{ auth_type }}</h1>
+    <form method="POST"> {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-3">
+        <!-- <label class="form-label">{{ field.label_tag }}</label> -->
+        {% render_field field class="form-control" placeholder=field.label %}
+        <div class="form-text">
+          {{ field.help_text }}
+        </div>
+      </div>
+      {% endfor %}
+      <button class="btn btn-outline-dark w-100" type="submit">Submit</button>
+    </form>
+    {% if auth_type == 'Register' %}
+    <div class="text-center mt-3 mb-3">
+      <span class="text-muted">Already registered?</span>
+      <a class='text-decoration-none link-dark' href="{% url 'users:login' %}">Login</a>
+    </div>
+    {% else %}
+    <div class="text-center mt-3 mb-3">
+      <span class="text-muted">Don't have an account?</span>
+      <a class='text-decoration-none link-dark' href="{% url 'users:register' %}">Register</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

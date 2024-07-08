@@ -141,9 +141,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 AUTH_USER_MODEL = "users.TunedUser"
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-]
+AUTHENTICATION_BACKENDS = ['apps.users.auth_backend.EmailBackend']
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -165,7 +163,6 @@ DJOSER = {
     'LOGIN_FIELD': 'email',  # or 'username' if you're using a custom user model
     'USER_CREATE_PASSWORD_RETYPE': True,
     'SERIALIZERS': {
-        'user_create': 'apps.users.serializers.CustomUserCreateSerializer',
         'user': 'apps.users.serializers.CustomUserSerializer',
     },
 }

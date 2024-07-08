@@ -25,14 +25,17 @@
               <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/movies/' %} nav-link-active active {% endif %}" href="{% url 'movies:list' %}">Pages</a>
             </li>
             <li class="nav-item ms-5">
-              <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/users/' %} nav-link-active active {% endif %}" href="">Users</a>
+              <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/tops/' %} nav-link-active active {% endif %}" href="">Tops</a>
+            </li>
+            <li class="nav-item ms-5">
+              <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/users/' %} nav-link-active active {% endif %}" href="{% url 'users:list' %}">Users</a>
             </li>
           </ul>
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0 mt-2">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             {% if request.user.is_authenticated %}
             <li class="nav-item dropdown">
               <a class="nav-link nav_link_base" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-toggle="dropdown">
-              {{ request.user.username }} <span class="badge bg-dark">{% if request.user.is_staff %}<i class="fa-solid fa-shield-halved"></i>{% else %}#{{ request.user.number }}{% endif %}</span>
+              {{ request.user.username }} {% if request.user.is_staff %}<i class="fa-solid fa-shield-halved text-dark"></i>{% endif %}
               </a>
               <ul class="dropdown-menu site-menu">
                 <li class="ms-4">
@@ -42,23 +45,23 @@
                   <hr>
                 </li>
                 <li class="ms-4">
-                  <form action="" method="POST" id="frm_logout"> {% csrf_token %}
-                      <a class="nav-link nav_link_base" href="javascript:$('#frm_logout').submit();" aria-current="page"><i class="fa-solid fa-right-from-bracket"></i> Log out</a>
+                  <form action="{% url 'users:logout' %}?next=/" method="POST" id="frm_logout"> {% csrf_token %}
+                    <a class="nav-link nav_link_base" href="javascript:$('#frm_logout').submit();" aria-current="page"><i class="fa-solid fa-right-from-bracket"></i> Log out</a>
                   </form>
                 </li>
               </ul>
             </li>
             {% else %}
             <li class="nav-item dropdown">
-              <a class="nav-link nav_link_base {% if request.path == '/racers/login/' or request.path == '/racers/register/' %} text-danger {% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-toggle="dropdown">
+              <a class="nav-link nav_link_base {% if request.path == '/users/login/' or request.path == '/users/register/' %} nav-link-active active {% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-toggle="dropdown">
               <i class="fa-solid fa-arrow-right-to-bracket"></i>
               </a>
               <ul class="dropdown-menu site-menu">
                 <li class="ms-4">
-                  <a class="nav-link nav_link_base nav-link-grow-up {% if request.path == '/racers/login/' %} text-danger {% endif %}" href="" aria-current="page" type='submit'>Log In</a>
+                  <a class="nav-link nav_link_base nav-link-grow-up {% if request.path == '/users/login/' %} nav-link-active active {% endif %}" href="{% url 'users:login' %}" aria-current="page" type='submit'>Log In</a>
                 </li>
                 <li class="ms-4">
-                  <a class="nav-link nav_link_base nav-link-grow-up {% if request.path == '/racers/register/' %} text-danger {% endif %}" href="" aria-current="page" type='submit'>Sign Up</a>
+                  <a class="nav-link nav_link_base nav-link-grow-up {% if request.path == '/users/register/' %} nav-link-active active {% endif %}" href="{% url 'users:register' %}" aria-current="page" type='submit'>Sign Up</a>
                 </li>
               </ul>
             </li>

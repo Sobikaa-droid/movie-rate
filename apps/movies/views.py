@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 import requests
-from decimal import Decimal
 
 from .models import Movie
 from .permissions import IsStaffUser, IsStaffUserOrReadOnly

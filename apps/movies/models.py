@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
-import requests
+from django.conf import settings
 
 
 class Movie(models.Model):
@@ -36,3 +36,14 @@ class Movie(models.Model):
 
         super().save(*args, **kwargs) """
 
+
+class SavedMovie(models.Model):
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='saved_song_set')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='saved_user_set')
+
+    class Meta:
+        ordering = ['-pk']
+
+    def __str__(self):
+        return f"{self.user}: {self.song}"
+    
