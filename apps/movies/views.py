@@ -1,6 +1,8 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.db import transaction
+from django.db.models import Exists, OuterRef, Avg
 from django.views import generic
+from django.contrib import messages
 from django.utils.text import slugify
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,7 +10,7 @@ from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 import requests
 
-from .models import Movie
+from .models import Movie, FavMovie, MovieReview
 from .permissions import IsStaffUser, IsStaffUserOrReadOnly
 from .serializers import MovieSerializer, MovieCreateSerializer, MovieCreateListSerializer
 
@@ -181,6 +183,8 @@ class MovieListView(generic.ListView):
             qs = qs.filter(title__icontains=search_val)
         if order_val:
             qs = qs.order_by(order_val)
+        """ if user.is_authenticated:
+            qs = qs.annotate(is_saved=Exists(FavMovie.objects.filter(song=OuterRef('pk'), user=user))) """
 
         return qs
 
@@ -192,9 +196,35 @@ class MovieDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).all().order_by('?')
         response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f').json()
+        user = self.request.user
+        reviews = MovieReview.objects.all()
+        
+        context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).all().order_by('?')
         context['imdb_votes'] = response.get('imdbVotes', 'N/A')
         context['imdb_rating'] = float(response.get('imdbRating', '0'))
+        context['avg_site_rating'] = reviews.aggregate(Avg('rating'))['rating__avg']
+        context['reviews'] = reviews
+        if user.is_authenticated:
+            context['is_saved'] = self.object.fav_movie_set.filter(user=user).exists()
+            if self.object.review_movie_set.filter(user=user).exists():
+                context['my_review'] = get_object_or_404(reviews, user=user)
 
         return context
+    
+
+def fav_or_unfav_movie(request, pk):
+    if request.method == 'POST':
+        movie = get_object_or_404(Movie, pk=pk)
+
+        faved_movie, created = FavMovie.objects.get_or_create(user=request.user, movie=movie)
+
+        if created:
+            messages.success(request, f'{movie.title} saved to your collection.')
+        else:
+            faved_movie.delete()
+            messages.success(request, f'{movie.title} unsaved from your collection.')
+    else:
+        messages.error(request, f'{request.method} not allowed.')
+
+    return redirect(request.META.get('HTTP_REFERER'))

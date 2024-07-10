@@ -15,5 +15,6 @@ urlpatterns = [
     path('api/detail/<int:pk>/', views.MovieAPIRetrieveDestroyView.as_view(), name='api_movie_retrievedestroy'),
     # generic
     path('', views.MovieListView.as_view(), name='list'),
-    path('detail/<int:pk>', views.MovieDetailView.as_view(), name='detail'),
+    path('detail/<int:pk>/', views.MovieDetailView.as_view(), name='detail'),
+    path('fav-movie/<int:pk>/', login_required(views.fav_or_unfav_movie, login_url='users:register'), name='fav_movie'),
 ]

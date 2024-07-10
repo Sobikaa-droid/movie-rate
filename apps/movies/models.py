@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class Movie(models.Model):
@@ -37,13 +38,34 @@ class Movie(models.Model):
         super().save(*args, **kwargs) """
 
 
-class SavedMovie(models.Model):
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='saved_song_set')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='saved_user_set')
+class FavMovie(models.Model):
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='fav_movie_set')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='fav_user_set')
 
     class Meta:
         ordering = ['-pk']
+        constraints = [
+            models.UniqueConstraint(fields=['movie', 'user'], name='unique_fav_movie_per_user')
+        ]
 
     def __str__(self):
-        return f"{self.user}: {self.song}"
+        return f"{self.user}: {self.movie}"
+
+
+class MovieReview(models.Model):
+    title = models.CharField(max_length=350, blank=True, null=True)
+    memo = models.TextField(max_length=9999, blank=True, null=True)
+    rating = models.IntegerField(default=0, validators=[MaxValueValidator(10), MinValueValidator(1)])
+    creation_date = models.DateTimeField(auto_now_add=True)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='review_movie_set')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='review_user_set')
+
+    class Meta:
+        ordering = ['-pk']
+        constraints = [
+            models.UniqueConstraint(fields=['movie', 'user'], name='unique_review_movie_per_user')
+        ]
+
+    def __str__(self):
+        return f"{self.user}: {self.movie}"
     

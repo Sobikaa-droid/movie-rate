@@ -7,7 +7,12 @@
     <div class="page_detail d-flex justify-content-center">
         <div class="page_detail_info flex-grow-1">
             <div class="d-flex">
-                <h1 class="page_title">{{ movie.title }} <a href="">{% if is_saved %}<i class="fa-solid fa-heart text-danger"></i>{% else %}<i class="fa-regular fa-heart text-secondary"></i>{% endif %}</a></h1>
+                <h1 class="page_title me-2">{{ movie.title }}</h1>
+                <h1 class="page_title">
+                    <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
+                    <a href="javascript:$('#frm_fav_movie').submit();">{% if is_saved %}<i class="fa-solid fa-heart text-danger"></i>{% else %}<i class="fa-regular fa-heart text-secondary"></i>{% endif %}</a>
+                    </form> 
+                </h1>
             </div>
             <p class="page_description text-secondary lh-base">{{ movie.plot|striptags|truncatechars:500 }}</p>
             {% if movie.plot|length >= 501 %}
@@ -75,31 +80,13 @@
             <img class="page_detail_image" src="{{ movie.poster }}" />
         </div>
     </div>
-    <div class="mb-5 d-flex">
-        <div class='imdb_rating'>
-            <h1 class="page_other mb-3">IMDb Rating</h1>
-            <div class='d-flex rating_div mb-2'>
-                <div class='stars me-3'>
-                    {% for i in '0123456789'|make_list %}
-                    {% if forloop.counter <= imdb_rating|floatformat:"0"|add:"0" %}
-                    <h2 class="fa-solid fa-star text-orange"></h2>
-                    {% else %}
-                    <h2 class="fa-solid fa-star text-secondary"></h2>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-                <div class='rating'>
-                    <h1 class="rating_text {% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% else %} text-success {% endif %}">{{ movie.rating }}</h1>
-                </div>
-            </div>
-            <p class='text-secondary'>{{ imdb_votes }} votes</p>
-        </div>
+    <div class="mb-5">
         <div class='site_rating'>
-            <h1 class="page_other mb-3">Site Rating</h1>
+            <h1 class="page_other mb-2">Rating</h1>
             <div class='d-flex rating_div mb-2'>
                 <div class='stars me-3'>
                     {% for i in '0123456789'|make_list %}
-                    {% if forloop.counter <= imdb_rating|floatformat:"0"|add:"0" %}
+                    {% if forloop.counter <= avg_site_rating|floatformat:"0"|add:"0" %}
                     <h2 class="fa-solid fa-star text-orange"></h2>
                     {% else %}
                     <h2 class="fa-solid fa-star text-secondary"></h2>
@@ -107,11 +94,31 @@
                     {% endfor %}
                 </div>
                 <div class='rating'>
-                    <h1 class="rating_text {% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% else %} text-success {% endif %}">{{ movie.rating }}</h1>
+                    <h1 class="rating_text {% if avg_site_rating < 5 %} text-danger {% elif avg_site_rating < 7 %} text-warning {% elif avg_site_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
+                        {% if avg_site_rating %}{{ avg_site_rating }}{% else %}0{% endif %}
+                    </h1>
                 </div>
             </div>
-            <p class='text-secondary'>{{ imdb_votes }} votes</p>
+            <p class='text-secondary'>{{ reviews.count }} votes; IMDb: 
+                <span class="{% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% elif imdb_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
+                {{ imdb_rating }}
+                </span> 
+                ({{ imdb_votes }} votes);
+            </p>
         </div>
+    </div>
+    <div class="mb-5">
+        <h1 class="page_other mb-4">Reviews</h1>
+        <div class="row row-cols-xxl-3 row-cols-xl-3 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-5">
+            {% for review in reviews %}
+            <div class="col">
+              <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-dark">@{{ review.user.username }}</span>
+                <span class="fw-bold {% if review.rating < 5 %} text-danger {% elif review.rating < 7 %} text-warning {% elif review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">{{ review.rating }}</span>
+              </h4>
+            </div>
+            {% endfor %}
+          </div>
     </div>
     <div class="mb-5">
         <h1 class="page_other mb-4">Other movies</h1>
