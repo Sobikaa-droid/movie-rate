@@ -13,6 +13,7 @@ import requests
 from .models import Movie, FavMovie, MovieReview
 from .permissions import IsStaffUser, IsStaffUserOrReadOnly
 from .serializers import MovieSerializer, MovieCreateSerializer, MovieCreateListSerializer
+from .forms import MovieReviewForm
 
 
 # API API API
@@ -105,6 +106,13 @@ class CreateMovieListAPIView(APIView):
                 for title in movies_list[0:limit]:
                     response = requests.get(f'https://www.omdbapi.com/?t={slugify(title)}&apikey=9a6fa81f').json()
 
+                    error = response.get('Error')
+                    if error:
+                        return Response(
+                            {'error': error},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
                     obj, created = Movie.objects.get_or_create(
                         title=response.get('Title', 'N/A'),
                         year=response.get('Year', 'N/A'),
@@ -142,6 +150,13 @@ class UpdateMovieListAPIView(APIView):
             qs = Movie.objects.all()
             for movie in qs:
                 response = requests.get(f'https://www.omdbapi.com/?t={slugify(movie.title)}&year={slugify(movie.year)}&apikey=9a6fa81f').json()
+
+                error = response.get('Error')
+                if error:
+                    return Response(
+                        {'error': error},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
                 
                 movie.title=response.get('Title', 'N/A')
                 movie.year=response.get('Year', 'N/A')
@@ -198,13 +213,16 @@ class MovieDetailView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f').json()
         user = self.request.user
-        reviews = MovieReview.objects.all()
+        reviews = MovieReview.objects.filter(movie__pk=self.kwargs.get('pk')).select_related('user')
         
         context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).all().order_by('?')
         context['imdb_votes'] = response.get('imdbVotes', 'N/A')
         context['imdb_rating'] = float(response.get('imdbRating', '0'))
         context['avg_site_rating'] = reviews.aggregate(Avg('rating'))['rating__avg']
         context['reviews'] = reviews
+        context['reviews_gte'] = reviews.filter(memo__gt=50).order_by('?')
+        context['review_form'] = MovieReviewForm()
+
         if user.is_authenticated:
             context['is_saved'] = self.object.fav_movie_set.filter(user=user).exists()
             if self.object.review_movie_set.filter(user=user).exists():
@@ -220,11 +238,45 @@ def fav_or_unfav_movie(request, pk):
         faved_movie, created = FavMovie.objects.get_or_create(user=request.user, movie=movie)
 
         if created:
-            messages.success(request, f'{movie.title} saved to your collection.')
+            messages.success(request, f'{movie.title} saved to favorites.')
         else:
             faved_movie.delete()
-            messages.success(request, f'{movie.title} unsaved from your collection.')
+            messages.success(request, f'{movie.title} unsaved from favorites.')
     else:
         messages.error(request, f'{request.method} not allowed.')
 
     return redirect(request.META.get('HTTP_REFERER'))
+
+def create_movie_review(request, pk):
+    if request.method == 'POST':
+        form = MovieReviewForm(request.POST)
+        if form.is_valid():
+            form.instance.user = request.user
+            form.instance.movie = get_object_or_404(Movie, pk=pk)
+            form.save()
+            messages.success(request, f'Your review has been posted.')
+        else:
+            messages.error(request, form.errors)
+    else:
+        messages.error(request, f'{request.method} not allowed.')
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+""" class MovieReviewCreateView(generic.CreateView):
+    form_class = MovieReviewForm
+    template_name = 'movies/detail.html'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.movie = get_object_or_404(Movie, pk=self.kwargs.get('pk'))
+        messages.success(self.request, f'Car has been applied.')
+
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, form.errors)
+
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return redirect(self.request.META.get('HTTP_REFERER')) """

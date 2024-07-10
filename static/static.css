@@ -30,7 +30,7 @@ h1 {
 }
 
 .rounded {
-  border-radius: 7% !important;
+  border-radius: 25px 25px !important;
 }
 
 .text-lighter {
@@ -389,6 +389,31 @@ h1 {
 
 .imdb_rating {
   margin: 0 10rem 0 0;
+}
+
+.border_review {
+  border-radius: 25px 25px;
+  height: 220px; /* Set the desired fixed height */
+  overflow: auto; /* Add a scrollbar if the content exceeds the height */
+  position: relative;
+}
+
+.review_bottom {
+  position: absolute; /* Position the bottom element absolutely */
+  bottom: 0;
+  width: 92%;
+}
+
+.review_green {
+  background-color: #dbffe5;
+}
+
+.review_red {
+  background-color: #ffdddd;
+}
+
+.review_yellow {
+  background-color: #fcf2d7;
 }
 
 /* RATE */

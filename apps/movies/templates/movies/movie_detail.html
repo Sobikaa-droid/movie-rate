@@ -99,25 +99,92 @@
                     </h1>
                 </div>
             </div>
-            <p class='text-secondary'>{{ reviews.count }} votes; IMDb: 
+            <p class='text-secondary'>
+                {{ reviews.count }} votes; IMDb: 
                 <span class="{% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% elif imdb_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
                 {{ imdb_rating }}
                 </span> 
                 ({{ imdb_votes }} votes);
+                {% if my_review %}
+                My rating:
+                <span class="{% if my_review.rating < 5 %} text-danger {% elif my_review.rating < 7 %} text-warning {% elif my_review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">
+                {{ my_review.rating }}
+                </span>
+                {% endif %}
             </p>
         </div>
     </div>
     <div class="mb-5">
         <h1 class="page_other mb-4">Reviews</h1>
-        <div class="row row-cols-xxl-3 row-cols-xl-3 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-5">
-            {% for review in reviews %}
+        <div class="row row-cols-xxl-2 row-cols-xl-2 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-5" style="width: 70%;">
+            {% for review in reviews_gte|slice:":4" %}
             <div class="col">
-              <h4 class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-dark">@{{ review.user.username }}</span>
-                <span class="fw-bold {% if review.rating < 5 %} text-danger {% elif review.rating < 7 %} text-warning {% elif review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">{{ review.rating }}</span>
-              </h4>
+              <div class="border_review p-3 {% if review.rating < 5 %} review_red {% elif review.rating < 7 %} review_yellow {% elif review.rating <= 10 %} review_green {% endif %}"> 
+                <h4 class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-dark fst-italic">{{ review.title|striptags|truncatechars:25 }}</span>
+                    <span class="fw-bold {% if review.rating < 5 %} text-danger {% elif review.rating < 7 %} text-warning {% elif review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">{{ review.rating }}</span>
+                </h4>
+                <p class='text-secondary'>{{ review.memo|striptags|truncatechars:150 }}
+                    {% if review.memo|length > 150 %}
+                    <a class="link link-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-review{{forloop.counter}}">
+                    Read full 
+                    </a>
+                    {% endif %}
+                </p>
+                {% if review.memo|length > 150 %}
+                <!-- Modal Show Description -->
+                <div class="modal fade" id="modal-show-review{{forloop.counter}}" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="ClearCartModalLabel">
+                                    <span class="text-dark fst-italic">{{ review.title|striptags|truncatechars:25 }}</span>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class='text-secondary'>{{ review.memo }}</p>
+                                <span class='text-dark'>Rating: </span><span class="fw-bold {% if review.rating < 5 %} text-danger {% elif review.rating < 7 %} text-warning {% elif review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">{{ review.rating }}</span>
+                            </div>
+                            <div class="modal-footer justify-content-between">
+                                <p>By @<a class='link link-dark' href="{{ review.user.get_absolute_url }}">{{ review.user.username }}</a></p>
+                                <p class='text-secondary'>{{ review.creation_date|date:"H:i, d.m.Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="review_bottom">
+                    <div class='d-flex justify-content-between'>
+                    <p class='fw-medium'>@<a class='link link-dark' href="{{ review.user.get_absolute_url }}">{{ review.user.username }}</a></p>
+                    <p class='text-secondary ms-auto'>{{ review.creation_date|date:"H:i, d.m.Y" }}</p>
+                    </div>
+                </div>
+              </div>
             </div>
             {% endfor %}
+          </div>
+          <div class="d-flex mt-5 mb-5">
+          <a class="btn btn-lg btn-outline-dark me-4" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">Leave a review</a>
+          {% if reviews %}
+          <a class="link link-dark mt-3" href="">See all reviews</a>
+          {% endif %}
+          </div>
+          <div class="collapse" id="collapseExample">
+            <div class="card card-body" style='width: 40%;'>
+                <form action="{% url 'movies:review_movie' movie.pk %}" method="POST" id="frm_review_movie"> {% csrf_token %}
+                    {% for field in review_form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label_tag }}</label>
+                        {% render_field field class="form-control" %}
+                        <div class="form-text">
+                        {{ field.help_text }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <a href="javascript:$('#frm_review_movie').submit();" class="btn btn-lg btn-dark">Post</a>
+                </form> 
+            </div>
           </div>
     </div>
     <div class="mb-5">
