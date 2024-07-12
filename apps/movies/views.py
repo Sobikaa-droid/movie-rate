@@ -211,18 +211,31 @@ class MovieDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f').json()
+        response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f')
+        yt_params = {
+            'q': f'{self.object.title} {self.object.year} trailer',
+            'type': 'video',
+            'part': 'id,snippet',
+            'maxResults': 1,
+            'key': 'AIzaSyC1f3pjIV3DIGIglOvOIq0eMjv-8RchM_k',
+        }
+        yt_response = requests.get('https://www.googleapis.com/youtube/v3/search', params=yt_params)
         user = self.request.user
         reviews = MovieReview.objects.filter(movie__pk=self.kwargs.get('pk')).select_related('user')
         
         context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).all().order_by('?')
-        context['imdb_votes'] = response.get('imdbVotes', 'N/A')
-        context['imdb_rating'] = float(response.get('imdbRating', '0'))
-        context['avg_site_rating'] = reviews.aggregate(Avg('rating'))['rating__avg']
+        context['avg_site_rating'] = reviews.aggregate(Avg('rating')).get('rating__avg')
         context['reviews'] = reviews
         context['reviews_gte'] = reviews.filter(memo__gt=50).order_by('?')
         context['review_form'] = MovieReviewForm()
 
+        if response.status_code == 200:
+            context['imdb_votes'] = response.json().get('imdbVotes', 'N/A')
+            context['imdb_rating'] = float(response.json().get('imdbRating', '0'))
+        if yt_response.status_code == 200:
+            video_id = yt_response.json().get('items')[0].get('id').get('videoId')
+            context['trailer'] = f'https://www.youtube.com/embed/{video_id}'
+            
         if user.is_authenticated:
             context['is_saved'] = self.object.fav_movie_set.filter(user=user).exists()
             if self.object.review_movie_set.filter(user=user).exists():
@@ -247,6 +260,7 @@ def fav_or_unfav_movie(request, pk):
 
     return redirect(request.META.get('HTTP_REFERER'))
 
+
 def create_movie_review(request, pk):
     if request.method == 'POST':
         form = MovieReviewForm(request.POST)
@@ -254,7 +268,7 @@ def create_movie_review(request, pk):
             form.instance.user = request.user
             form.instance.movie = get_object_or_404(Movie, pk=pk)
             form.save()
-            messages.success(request, f'Your review has been posted.')
+            messages.success(request, 'Your review has been posted.')
         else:
             messages.error(request, form.errors)
     else:

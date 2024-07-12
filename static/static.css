@@ -387,15 +387,33 @@ h1 {
   font-size: 2.5rem;
 }
 
+#star10:hover #star9, 
+#star10:hover #star8,
+#star10:hover #star7, 
+#star10:hover #star6,
+#star10:hover #star5, 
+#star10:hover #star4,
+#star10:hover #star3, 
+#star10:hover #star2,
+#star10:hover #star1
+{
+  color: orange !important;
+}
+
 .imdb_rating {
   margin: 0 10rem 0 0;
 }
 
 .border_review {
   border-radius: 25px 25px;
-  height: 220px; /* Set the desired fixed height */
+  height: 200px; /* Set the desired fixed height */
   overflow: auto; /* Add a scrollbar if the content exceeds the height */
   position: relative;
+  transition: background-color 0.3s;
+}
+
+.border_review:hover {
+  background-color: #f0f0f0;
 }
 
 .review_bottom {
@@ -415,53 +433,6 @@ h1 {
 .review_yellow {
   background-color: #fcf2d7;
 }
-
-/* RATE */
-
-.rate {
-    float: left;
-    height: 46px;
-}
-
-.rate-active {
-  color: #e9c40a;
-}
-
-.rate:not(:checked) > input {
-    position:absolute;
-    top:-9999px;
-}
-
-.rate:not(:checked) > label {
-    float:right;
-    width:1.5em;
-    overflow:hidden;
-    white-space:nowrap;
-    cursor:pointer;
-    font-size:35px;
-    color:#ccc;
-}
-
-/*
-.rate > input:checked ~ label {
-    color: #ffc700;
-}
-*/
-
-.rate:not(:checked) > label:hover,
-.rate:not(:checked) > label:hover ~ label {
-    color: #ccc;
-}
-
-/*
-.rate > input:checked + label:hover,
-.rate > input:checked + label:hover ~ label,
-.rate > input:checked ~ label:hover,
-.rate > input:checked ~ label:hover ~ label,
-.rate > label:hover ~ input:checked ~ label {
-    color: #c59b08;
-}
-*/
 
 /* RATINGS */
 

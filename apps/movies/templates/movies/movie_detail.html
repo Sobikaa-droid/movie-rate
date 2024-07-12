@@ -7,18 +7,18 @@
     <div class="page_detail d-flex justify-content-center">
         <div class="page_detail_info flex-grow-1">
             <div class="d-flex">
-                <h1 class="page_title me-2">{{ movie.title }}</h1>
-                <h1 class="page_title">
-                    <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
+                <h1 class="page_title me-2">
+                    {{ movie.title }}
                     <a href="javascript:$('#frm_fav_movie').submit();">{% if is_saved %}<i class="fa-solid fa-heart text-danger"></i>{% else %}<i class="fa-regular fa-heart text-secondary"></i>{% endif %}</a>
-                    </form> 
                 </h1>
+                <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
+                </form> 
             </div>
             <p class="page_description text-secondary lh-base">{{ movie.plot|striptags|truncatechars:500 }}</p>
             {% if movie.plot|length >= 501 %}
             <p>
-                <a class="btn btn-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-description">
-                    Read Full Plot
+                <a class="link link-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-description">
+                    Read full
                 </a>
             </p>
             <!-- Modal Show Description -->
@@ -37,7 +37,7 @@
             </div>
             {% endif %}
             <!-- ############ -->
-            <table class="table table-borderless" data-bs-theme="light">
+            <table class="table table-borderless mb-4" data-bs-theme="light">
                 <tbody>
                     <tr>
                         <th scope="row" class="text-dark">Type</th>
@@ -81,16 +81,22 @@
         </div>
     </div>
     <div class="mb-5">
+        <h1 class="page_other mb-4">Trailer</h1>
+        <iframe width="600" height="350" src="{{ trailer }}"></iframe>
+    </div>
+    <div class="mb-5">
         <div class='site_rating'>
             <h1 class="page_other mb-2">Rating</h1>
             <div class='d-flex rating_div mb-2'>
                 <div class='stars me-3'>
                     {% for i in '0123456789'|make_list %}
+                    <a class='star{{ forloop.counter }} text-decoration-none' href='#'>
                     {% if forloop.counter <= avg_site_rating|floatformat:"0"|add:"0" %}
                     <h2 class="fa-solid fa-star text-orange"></h2>
                     {% else %}
                     <h2 class="fa-solid fa-star text-secondary"></h2>
                     {% endif %}
+                    </a>
                     {% endfor %}
                 </div>
                 <div class='rating'>
@@ -120,18 +126,18 @@
             {% for review in reviews_gte|slice:":4" %}
             <div class="col">
               <div class="border_review p-3 {% if review.rating < 5 %} review_red {% elif review.rating < 7 %} review_yellow {% elif review.rating <= 10 %} review_green {% endif %}"> 
+                <a href="#" class="link stretched-link" data-bs-toggle="modal" data-bs-target="#modal-show-review{{forloop.counter}}"></a>
                 <h4 class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-dark fst-italic">{{ review.title|striptags|truncatechars:25 }}</span>
                     <span class="fw-bold {% if review.rating < 5 %} text-danger {% elif review.rating < 7 %} text-warning {% elif review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">{{ review.rating }}</span>
                 </h4>
-                <p class='text-secondary'>{{ review.memo|striptags|truncatechars:150 }}
-                    {% if review.memo|length > 150 %}
+                <p class='text-secondary'>{{ review.memo|striptags|truncatechars:140 }}
+                    {% if review.memo|length > 140 %}
                     <a class="link link-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-review{{forloop.counter}}">
                     Read full 
                     </a>
                     {% endif %}
                 </p>
-                {% if review.memo|length > 150 %}
                 <!-- Modal Show Description -->
                 <div class="modal fade" id="modal-show-review{{forloop.counter}}" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
@@ -153,7 +159,6 @@
                         </div>
                     </div>
                 </div>
-                {% endif %}
                 <div class="review_bottom">
                     <div class='d-flex justify-content-between'>
                     <p class='fw-medium'>@<a class='link link-dark' href="{{ review.user.get_absolute_url }}">{{ review.user.username }}</a></p>
@@ -176,7 +181,11 @@
                     {% for field in review_form %}
                     <div class="mb-3">
                         <label class="form-label">{{ field.label_tag }}</label>
+                        {% if field.name == 'rating' %}
+                        {% render_field field class="form-range" type="range" %}
+                        {% else %}
                         {% render_field field class="form-control" %}
+                        {% endif %}
                         <div class="form-text">
                         {{ field.help_text }}
                         </div>

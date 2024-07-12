@@ -18,6 +18,7 @@ class Movie(models.Model):
     country = models.CharField(max_length=100)
     type = models.CharField(max_length=50)
     total_seasons = models.CharField(blank=True, null=True, max_length=30)
+    slug = models.SlugField(blank=True, null=True, max_length=350)
 
 
     class Meta:
@@ -26,9 +27,15 @@ class Movie(models.Model):
     def __str__(self):
         return f'{self.title} ({self.year})'
     
-    def get_absolute_url(self):
-        return reverse('movies:detail', args=[self.pk])
+    def save(self, *args, **kwargs):
+        self.slug = slugify(str(self.title))
+
+        super().save(*args, **kwargs)
     
+    def get_absolute_url(self):
+        return reverse('movies:detail', args=[self.slug, self.pk])
+    
+
 """     def save(self, *args, **kwargs):
         title = slugify(str(self.title))
         year = int(self.year)
