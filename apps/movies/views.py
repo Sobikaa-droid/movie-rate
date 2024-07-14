@@ -235,6 +235,8 @@ class MovieDetailView(generic.DetailView):
         if yt_response.status_code == 200:
             video_id = yt_response.json().get('items')[0].get('id').get('videoId')
             context['trailer'] = f'https://www.youtube.com/embed/{video_id}'
+        else:
+            context['trailer'] = f'https://www.youtube.com/embed/rK42auRaDDk'
             
         if user.is_authenticated:
             context['is_saved'] = self.object.fav_movie_set.filter(user=user).exists()
@@ -247,7 +249,6 @@ class MovieDetailView(generic.DetailView):
 def fav_or_unfav_movie(request, pk):
     if request.method == 'POST':
         movie = get_object_or_404(Movie, pk=pk)
-
         faved_movie, created = FavMovie.objects.get_or_create(user=request.user, movie=movie)
 
         if created:
@@ -261,14 +262,44 @@ def fav_or_unfav_movie(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
+def rate_movie(request, pk):
+    if request.method == 'POST':
+        form = MovieReviewForm(request.POST)
+        if form.is_valid():
+            movie = get_object_or_404(Movie, pk=pk)
+            rating = request.POST.get('rating', None)
+
+            review, created = MovieReview.objects.get_or_create(
+                movie=movie,
+                user=request.user,
+                defaults={
+                    'rating': rating
+                }
+            )
+            if not created:
+                review.rating = rating
+                review.save()
+
+            messages.success(request, f'{movie.title} rated {rating}.')
+        else:
+            messages.error(request, form.errors)
+    else:
+        messages.error(request, f'{request.method} not allowed.')
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
 def create_movie_review(request, pk):
     if request.method == 'POST':
         form = MovieReviewForm(request.POST)
         if form.is_valid():
-            form.instance.user = request.user
-            form.instance.movie = get_object_or_404(Movie, pk=pk)
-            form.save()
-            messages.success(request, 'Your review has been posted.')
+            movie = get_object_or_404(Movie, pk=pk)
+            if not MovieReview.objects.filter(movie=movie, user=request.user).exists():
+                form.instance.user = request.user
+                form.instance.movie = get_object_or_404(Movie, pk=pk)
+                form.save()
+                messages.success(request, 'Your review has been posted.')
+            else:
+                messages.error(request, 'You already published a review.')
         else:
             messages.error(request, form.errors)
     else:

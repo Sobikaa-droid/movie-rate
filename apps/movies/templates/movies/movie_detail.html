@@ -87,17 +87,18 @@
     <div class="mb-5">
         <div class='site_rating'>
             <h1 class="page_other mb-2">Rating</h1>
-            <div class='d-flex rating_div mb-2'>
-                <div class='stars me-3'>
-                    {% for i in '0123456789'|make_list %}
-                    <a class='star{{ forloop.counter }} text-decoration-none' href='#'>
-                    {% if forloop.counter <= avg_site_rating|floatformat:"0"|add:"0" %}
-                    <h2 class="fa-solid fa-star text-orange"></h2>
-                    {% else %}
-                    <h2 class="fa-solid fa-star text-secondary"></h2>
-                    {% endif %}
-                    </a>
-                    {% endfor %}
+            <div class='d-flex rating_div mb-2 mt-3'>
+                <div class='rate me-2'>
+                    <form action="{% url 'movies:rate_movie' movie.pk %}" method="POST"> {% csrf_token %}
+                    <div id="full-stars-example-two">
+                        <div class="rating-group">
+                            {% for i in '0123456789'|make_list %}
+                            <label aria-label="{{ forloop.counter }} star" class="rating__label rating__label__submit" for="rating3-{{ forloop.counter }}"><i class="rating__icon rating__icon--star fa fa-star {% if forloop.counter <= avg_site_rating|floatformat:"0"|add:"0" %} text-orange {% else %} text-secondary {% endif %}"></i></label>
+                            <input class="rating__input" name="rating" id="rating3-{{ forloop.counter }}" value="{{ forloop.counter }}" type="submit">
+                            {% endfor %}
+                        </div>
+                    </div>
+                    </form>
                 </div>
                 <div class='rating'>
                     <h1 class="rating_text {% if avg_site_rating < 5 %} text-danger {% elif avg_site_rating < 7 %} text-warning {% elif avg_site_rating <= 10 %} text-success {% else %} text-dark {% endif %}">

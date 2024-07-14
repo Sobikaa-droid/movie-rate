@@ -17,5 +17,6 @@ urlpatterns = [
     path('', views.MovieListView.as_view(), name='list'),
     path('detail/<slug:slug>-<int:pk>/', views.MovieDetailView.as_view(), name='detail'),
     path('fav-movie/<int:pk>/', login_required(views.fav_or_unfav_movie, login_url='users:register'), name='fav_movie'),
+    path('rate-movie/<int:pk>/', login_required(views.rate_movie, login_url='users:register'), name='rate_movie'),
     path('review-movie/<int:pk>/', login_required(views.create_movie_review, login_url='users:register'), name='review_movie'),
 ]
