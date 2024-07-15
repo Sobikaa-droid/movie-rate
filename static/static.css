@@ -441,13 +441,62 @@ h1 {
   }
 }
 
+#full-stars-example-two-radio {
+
+  /* use display:inline-flex to prevent whitespace issues. alternatively, you can put all the children of .rating-group on a single line */
+  .rating-group-radio {
+    display: inline-flex;
+  }
+  
+  /* make hover effect work properly in IE */
+  .rating__icon-radio {
+    pointer-events: none;
+  }
+  
+  /* hide radio inputs */
+  .rating__input-radio {
+   position: absolute !important;
+   left: -9999px !important;
+  }
+  
+  /* hide 'none' input from screenreaders */
+  .rating__input--none-radio {
+    display: none
+  }
+
+  /* set icon padding and size */
+  .rating__label-radio {
+    cursor: pointer;
+    padding: 0 0.1em 0 0;
+    font-size: 1.9rem;
+  }
+
+  .rating__icon--star {
+    color: #ff5500;
+  }
+
+  /* if any input is checked, make its following siblings grey */
+  .rating__input-radio:checked ~ .rating__label-radio .rating__icon--star-radio {
+    color: #6c757d;
+  }
+  
+  /* make all stars orange on rating group hover */
+  .rating-group-radio:hover .rating__label-radio .rating__icon--star-radio {
+    color: #ff5500;
+  }
+
+  /* make hovered input's following siblings grey on hover */
+  .rating__input-radio:hover ~ .rating__label-radio .rating__icon--star-radio {
+    color: #6c757d;
+  }
+}
+
 .imdb_rating {
   margin: 0 10rem 0 0;
 }
 
 .border_review {
   border-radius: 25px 25px;
-  height: 200px; /* Set the desired fixed height */
   overflow: auto; /* Add a scrollbar if the content exceeds the height */
   position: relative;
   transition: background-color 0.3s;

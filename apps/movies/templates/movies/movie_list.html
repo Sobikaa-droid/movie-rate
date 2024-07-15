@@ -3,54 +3,54 @@
 {% load static %}
 {% block content %}
 <div id="banner">
-   <div class="banner_image banner_image_pages"></div>
-   <h1 class="text-center banner_text text-white user-select-none">Pages</h1>
+    <div class="banner_image banner_image_pages"></div>
+    <h1 class="text-center banner_text text-white user-select-none">Pages</h1>
 </div>
 <div class="container mt-4">
-   <div class="d-flex mb-5">
-      <div class="dropdown">
-         <button class="btn btn-lg btn-outline-white dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-         Sort
-         </button>
-         <ul class="dropdown-menu">
-            <li><a href="{% url 'movies:list' %}?order_by=title" class="dropdown-item">Title</a></li>
-            <li><a href="{% url 'movies:list' %}?order_by=-rating" class="dropdown-item">Rating</a></li>
-         </ul>
-      </div>
-      <ul class="nav nav_filter_by nav-underline justify-content-center ms-5 me-auto">
-         <li class="nav-item">
-           <a class="nav-link {% if request.GET.filter_val == None %} active {% endif %} link-dark me-3" aria-current="page" href="{% url 'movies:list' %}">
-             <h5>All</h5>
-           </a>
-         </li>
-         <li class="nav-item">
-           <a class="nav-link {% if request.GET.filter_val == 'series' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=series">
-             <h5>Series</h5>
-           </a>
-         </li>
-         <li class="nav-item">
-            <a class="nav-link {% if request.GET.filter_val == 'movie' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=movie">
-              <h5>Movies</h5>
+    <div class="d-flex mb-5">
+        <div class="dropdown">
+            <button class="btn btn-lg btn-outline-white dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Sort
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'movies:list' %}?order_by=title" class="dropdown-item">Title</a></li>
+                <li><a href="{% url 'movies:list' %}?order_by=-rating" class="dropdown-item">Rating</a></li>
+            </ul>
+        </div>
+        <ul class="nav nav_filter_by nav-underline justify-content-center ms-5 me-auto">
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.filter_val == None %} active {% endif %} link-dark me-3" aria-current="page" href="{% url 'movies:list' %}">
+                    <h5>All</h5>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.filter_val == 'series' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=series">
+                    <h5>Series</h5>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.filter_val == 'movie' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=movie">
+                    <h5>Movies</h5>
+                </a>
+            </li>
+        </ul>
+        <form method="GET" action="{% url 'movies:list' %}" class="input-group w-25">
+            <input type="text" name="search_val" class="form-control" placeholder="Title" aria-label="Name" aria-describedby="button-addon2">
+            <button class="btn btn-dark" type="submit" id="button-addon2"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+        </form>
+    </div>
+    {% if not movies %}
+    <h3 class="text-center mt-5">No movies found.</h3>
+    {% endif %}
+    <div class="row row-cols-2 row-cols-xxl-5 row-cols-xl-4 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 gy-5 gx-5 text-center mb-5">
+        {% for movie in movies %}
+        <div class="col">
+            <a href="{{ movie.get_absolute_url }}" class="card_image_link text-decoration-none">   
+            <img src="{{ movie.poster }}" class="card_image">
             </a>
-         </li>
-      </ul>
-      <form method="GET" action="{% url 'movies:list' %}" class="input-group w-25">
-         <input type="text" name="search_val" class="form-control" placeholder="Title" aria-label="Name" aria-describedby="button-addon2">
-         <button class="btn btn-dark" type="submit" id="button-addon2"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
-      </form>
-   </div>
-   {% if not movies %}
-   <h3 class="text-center mt-5">No movies found.</h3>
-   {% endif %}
-   <div class="row row-cols-2 row-cols-xxl-5 row-cols-xl-4 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 gy-5 gx-5 text-center">
-      {% for movie in movies %}
-      <div class="col">
-         <a href="{{ movie.get_absolute_url }}" class="card_image_link text-decoration-none">   
-         <img src="{{ movie.poster }}" class="card_image">
-         </a>
-      </div>
-      {% endfor %}
-   </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% include 'pagination.html' %}
 {% endblock %}

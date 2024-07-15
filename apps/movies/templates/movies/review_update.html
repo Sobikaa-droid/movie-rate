@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Edit review{% endblock %}
+{% block content %}
+{% load widget_tweaks %}
+<div class="container mt-5 mb-5 w-50">
+  <div class="user_detail">
+    <div class="d-flex flex-wrap justify-content-center">
+      <div class='user_detail_info ms-5 w-50 mt-5 mb-5'>
+        <h1 class="page_other">Edit review</h1>
+        <form method="POST" enctype="multipart/form-data" id='frm_edit_review'>
+          {% csrf_token %}
+          {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label">{{ field.label_tag }}</label>
+            {% if field.name == 'rating' %}
+            <div id="full-stars-example-two-radio">
+                <div class="rating-group-radio">
+                    {% for i in '0123456789'|make_list %}
+                    <label aria-label="{{ forloop.counter }} star-radio" class="rating__label-radio" for="rating3-{{ forloop.counter }}-radio"><i class="rating__icon-radio rating__icon--star-radio fa fa-star text-orange"></i></label>
+                    <input {% if review.rating == forloop.counter %} checked {% endif %} class="rating__input-radio" name="rating" id="rating3-{{ forloop.counter }}-radio" value="{{ forloop.counter }}" type="radio">
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            {% render_field field class="form-control" %}
+            {% endif %}
+            <div class="form-text">
+            {{ field.help_text }}
+            </div>
+          </div>
+          {% endfor %}
+        </form>
+        <div class="d-flex">
+            <a class='btn btn-dark me-auto' href="javascript:$('#frm_edit_review').submit();">Save</a>
+            <a class='btn btn-outline-danger' href='#' data-bs-toggle="modal" data-bs-target="#modal-show-review-deletion">Delete</a>
+            <div class="modal fade" id="modal-show-review-deletion" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="ClearCartModalLabel">
+                                <span class="text-dark">Confirmation</span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class='text-dark'>Are you sure you want to delete your review?</p>
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <form action="{% url 'movies:delete_review' review.pk %}" method="POST" id="frm_delete_review"> {% csrf_token %}
+                            <a class='btn btn-outline-danger' href="javascript:$('#frm_delete_review').submit();">Yes</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

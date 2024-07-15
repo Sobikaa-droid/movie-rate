@@ -12,13 +12,13 @@
                     <a href="javascript:$('#frm_fav_movie').submit();">{% if is_saved %}<i class="fa-solid fa-heart text-danger"></i>{% else %}<i class="fa-regular fa-heart text-secondary"></i>{% endif %}</a>
                 </h1>
                 <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
-                </form> 
+                </form>
             </div>
             <p class="page_description text-secondary lh-base">{{ movie.plot|striptags|truncatechars:500 }}</p>
             {% if movie.plot|length >= 501 %}
             <p>
                 <a class="link link-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-description">
-                    Read full
+                Read full
                 </a>
             </p>
             <!-- Modal Show Description -->
@@ -89,25 +89,26 @@
             <h1 class="page_other mb-2">Rating</h1>
             <div class='d-flex rating_div mb-2 mt-3'>
                 <div class='rate me-2'>
-                    <form action="{% url 'movies:rate_movie' movie.pk %}" method="POST"> {% csrf_token %}
-                    <div id="full-stars-example-two">
-                        <div class="rating-group">
-                            {% for i in '0123456789'|make_list %}
-                            <label aria-label="{{ forloop.counter }} star" class="rating__label rating__label__submit" for="rating3-{{ forloop.counter }}"><i class="rating__icon rating__icon--star fa fa-star {% if forloop.counter <= avg_site_rating|floatformat:"0"|add:"0" %} text-orange {% else %} text-secondary {% endif %}"></i></label>
-                            <input class="rating__input" name="rating" id="rating3-{{ forloop.counter }}" value="{{ forloop.counter }}" type="submit">
-                            {% endfor %}
+                    <form action="{% url 'movies:rate_movie' movie.pk %}" method="POST">
+                        {% csrf_token %}
+                        <div id="full-stars-example-two">
+                            <div class="rating-group">
+                                {% for i in '0123456789'|make_list %}
+                                <label aria-label="{{ forloop.counter }} star" class="rating__label rating__label__submit" for="rating3-{{ forloop.counter }}"><i class="rating__icon rating__icon--star fa fa-star {% if forloop.counter <= avg_site_rating|floatformat:"0"|add:"0" %} text-orange {% else %} text-secondary {% endif %}"></i></label>
+                                <input class="rating__input" name="rating" id="rating3-{{ forloop.counter }}" value="{{ forloop.counter }}" type="submit">
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
                     </form>
                 </div>
                 <div class='rating'>
                     <h1 class="rating_text {% if avg_site_rating < 5 %} text-danger {% elif avg_site_rating < 7 %} text-warning {% elif avg_site_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
-                        {% if avg_site_rating %}{{ avg_site_rating }}{% else %}0{% endif %}
+                        {% if avg_site_rating %}{{ avg_site_rating|floatformat:"1" }}{% else %}0{% endif %}
                     </h1>
                 </div>
             </div>
             <p class='text-secondary'>
-                {{ reviews.count }} votes; IMDb: 
+                {{ reviews_count }} vote{{ reviews_count|pluralize }}; IMDb: 
                 <span class="{% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% elif imdb_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
                 {{ imdb_rating }}
                 </span> 
@@ -123,88 +124,51 @@
     </div>
     <div class="mb-5">
         <h1 class="page_other mb-4">Reviews</h1>
-        <div class="row row-cols-xxl-2 row-cols-xl-2 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-5" style="width: 70%;">
-            {% for review in reviews_gte|slice:":4" %}
-            <div class="col">
-              <div class="border_review p-3 {% if review.rating < 5 %} review_red {% elif review.rating < 7 %} review_yellow {% elif review.rating <= 10 %} review_green {% endif %}"> 
-                <a href="#" class="link stretched-link" data-bs-toggle="modal" data-bs-target="#modal-show-review{{forloop.counter}}"></a>
-                <h4 class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-dark fst-italic">{{ review.title|striptags|truncatechars:25 }}</span>
-                    <span class="fw-bold {% if review.rating < 5 %} text-danger {% elif review.rating < 7 %} text-warning {% elif review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">{{ review.rating }}</span>
-                </h4>
-                <p class='text-secondary'>{{ review.memo|striptags|truncatechars:140 }}
-                    {% if review.memo|length > 140 %}
-                    <a class="link link-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-review{{forloop.counter}}">
-                    Read full 
-                    </a>
-                    {% endif %}
-                </p>
-                <!-- Modal Show Description -->
-                <div class="modal fade" id="modal-show-review{{forloop.counter}}" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="ClearCartModalLabel">
-                                    <span class="text-dark fst-italic">{{ review.title|striptags|truncatechars:25 }}</span>
-                                </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p class='text-secondary'>{{ review.memo }}</p>
-                                <span class='text-dark'>Rating: </span><span class="fw-bold {% if review.rating < 5 %} text-danger {% elif review.rating < 7 %} text-warning {% elif review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">{{ review.rating }}</span>
-                            </div>
-                            <div class="modal-footer justify-content-between">
-                                <p>By @<a class='link link-dark' href="{{ review.user.get_absolute_url }}">{{ review.user.username }}</a></p>
-                                <p class='text-secondary'>{{ review.creation_date|date:"H:i, d.m.Y" }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="review_bottom">
-                    <div class='d-flex justify-content-between'>
-                    <p class='fw-medium'>@<a class='link link-dark' href="{{ review.user.get_absolute_url }}">{{ review.user.username }}</a></p>
-                    <p class='text-secondary ms-auto'>{{ review.creation_date|date:"H:i, d.m.Y" }}</p>
-                    </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-          <div class="d-flex mt-5 mb-5">
-          <a class="btn btn-lg btn-outline-dark me-4" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">Leave a review</a>
-          {% if reviews %}
-          <a class="link link-dark mt-3" href="">See all reviews</a>
-          {% endif %}
-          </div>
-          <div class="collapse" id="collapseExample">
+        {% include 'movies/reviews_base.html' with reviews=reviews_gte width=70 columns=2 review_height=200 %}
+        <div class="d-flex mt-5 mb-5">
+            <a class="btn btn-lg btn-outline-dark me-4" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">Leave a review</a>
+            {% if reviews_count %}
+            <a class="link link-dark mt-3" href="{% url 'movies:review_list' movie.pk %}">See {{ reviews_count }} review{{ reviews_count|pluralize }}</a>
+            {% endif %}
+        </div>
+        <div class="collapse" id="collapseExample">
             <div class="card card-body" style='width: 40%;'>
-                <form action="{% url 'movies:review_movie' movie.pk %}" method="POST" id="frm_review_movie"> {% csrf_token %}
+                <form action="{% url 'movies:review_movie' movie.pk %}" method="POST" id="frm_review_movie">
+                    {% csrf_token %}
                     {% for field in review_form %}
                     <div class="mb-3">
                         <label class="form-label">{{ field.label_tag }}</label>
                         {% if field.name == 'rating' %}
-                        {% render_field field class="form-range" type="range" %}
+                        <div id="full-stars-example-two-radio">
+                            <div class="rating-group-radio">
+                                <input disabled checked class="rating__input-radio" name="rating" id="rating3-0-radio" value="0" type="radio">
+                                {% for i in '0123456789'|make_list %}
+                                <label aria-label="{{ forloop.counter }} star-radio" class="rating__label-radio" for="rating3-{{ forloop.counter }}-radio"><i class="rating__icon-radio rating__icon--star-radio fa fa-star text-orange"></i></label>
+                                <input class="rating__input-radio" name="rating" id="rating3-{{ forloop.counter }}-radio" value="{{ forloop.counter }}" type="radio">
+                                {% endfor %}
+                            </div>
+                        </div>
                         {% else %}
                         {% render_field field class="form-control" %}
                         {% endif %}
                         <div class="form-text">
-                        {{ field.help_text }}
+                            {{ field.help_text }}
                         </div>
                     </div>
                     {% endfor %}
                     <a href="javascript:$('#frm_review_movie').submit();" class="btn btn-lg btn-dark">Post</a>
-                </form> 
+                </form>
             </div>
-          </div>
+        </div>
     </div>
     <div class="mb-5">
         <h1 class="page_other mb-4">Other movies</h1>
         <div class="row row-cols-xxl-5 row-cols-xl-5 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-4 gy-5">
-            {% for movie in movies|slice:"0:5" %}
+            {% for movie in movies %}
             <div class="col">
                 <div class="card bg-transparent">
                     <a href="{{ movie.get_absolute_url }}" class="card_image_link text-decoration-none">
-                        <img src="{{ movie.poster }}" class="card-img-top card_gradient page_detail_other_image" />
+                    <img src="{{ movie.poster }}" class="card-img-top card_gradient page_detail_other_image" />
                     </a>
                 </div>
             </div>

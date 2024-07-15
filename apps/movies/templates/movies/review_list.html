@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}{{ movie.title }} reviews{% endblock %}
+{% load static %}
+{% block content %}
+{% load widget_tweaks %}
+<div class="container">
+    <div class="mb-5 mt-5">
+        <h1 class="page_other mb-4">Reviews: <span class='text-secondary'>{{ movie.title }}<span></h1>
+        {% include 'movies/reviews_base.html' with reviews=reviews width=50 columns=1 review_height=170 %}
+    </div>
+</div>
+{% include 'pagination.html' %}
+{% endblock %}
