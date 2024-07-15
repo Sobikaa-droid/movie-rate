@@ -10,7 +10,6 @@ class Movie(models.Model):
     title = models.CharField(max_length=350)
     year = models.CharField(max_length=25)
     genre = models.JSONField()
-    rating = models.DecimalField(max_digits=10, decimal_places=1)
     director = models.CharField(max_length=150)
     actors = models.JSONField()
     plot = models.TextField(max_length=9999)

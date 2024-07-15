@@ -47,23 +47,23 @@ class CreateMovieAPIView(APIView):
                 title = serializer.validated_data.get('title').lower()
                 year = serializer.validated_data.get('year', None)
                 if year:
-                    response = requests.get(f'https://www.omdbapi.com/?t={title}&year={year}&apikey=9a6fa81f').json()
+                    response = requests.get(f'https://www.omdbapi.com/?t={title}&year={year}&apikey=9a6fa81f')
                 else:
-                    response = requests.get(f'https://www.omdbapi.com/?t={title}&apikey=9a6fa81f').json()
+                    response = requests.get(f'https://www.omdbapi.com/?t={title}&apikey=9a6fa81f')
 
-                error = response.get('Error')
-                if error:
+                if response.status_code != 200:
                     return Response(
-                        {'error': error},
+                        {'error': response.status_code},
                         status=status.HTTP_400_BAD_REQUEST
                     )
+                
+                response = response.json()
                 
                 obj, created = Movie.objects.get_or_create(
                         title=response.get('Title', 'N/A'),
                         year=response.get('Year', 'N/A'),
                         defaults={
                             'genre': response.get('Genre', 'N/A').split(", "),
-                            'rating': float(response.get('imdbRating', 0)) if response.get('imdbRating') != 'N/A' else float(0),
                             'director': response.get('Director', 'N/A'),
                             'actors': response.get('Actors', 'N/A').split(", "),
                             'plot': response.get('Plot', 'N/A'),
@@ -105,21 +105,21 @@ class CreateMovieListAPIView(APIView):
                 ]
                 limit = int(serializer.validated_data.get('limit'))
                 for title in movies_list[0:limit]:
-                    response = requests.get(f'https://www.omdbapi.com/?t={slugify(title)}&apikey=9a6fa81f').json()
+                    response = requests.get(f'https://www.omdbapi.com/?t={slugify(title)}&apikey=9a6fa81f')
 
-                    error = response.get('Error')
-                    if error:
+                    if response.status_code != 200:
                         return Response(
-                            {'error': error},
+                            {'error': response.status_code},
                             status=status.HTTP_400_BAD_REQUEST
                         )
+                
+                    response = response.json()
 
                     obj, created = Movie.objects.get_or_create(
                         title=response.get('Title', 'N/A'),
                         year=response.get('Year', 'N/A'),
                         defaults={
                             'genre': response.get('Genre', 'N/A').split(", "),
-                            'rating': float(response.get('imdbRating', 0)) if response.get('imdbRating') != 'N/A' else float(0),
                             'director': response.get('Director', 'N/A'),
                             'actors': response.get('Actors', 'N/A').split(", "),
                             'plot': response.get('Plot', 'N/A'),
@@ -150,19 +150,19 @@ class UpdateMovieListAPIView(APIView):
         with transaction.atomic():
             qs = Movie.objects.all()
             for movie in qs:
-                response = requests.get(f'https://www.omdbapi.com/?t={slugify(movie.title)}&year={slugify(movie.year)}&apikey=9a6fa81f').json()
+                response = requests.get(f'https://www.omdbapi.com/?t={slugify(movie.title)}&year={slugify(movie.year)}&apikey=9a6fa81f')
 
-                error = response.get('Error')
-                if error:
+                if response.status_code != 200:
                     return Response(
-                        {'error': error},
+                        {'error': response.status_code},
                         status=status.HTTP_400_BAD_REQUEST
                     )
+                
+                response = response.json()
                 
                 movie.title=response.get('Title', 'N/A')
                 movie.year=response.get('Year', 'N/A')
                 movie.genre=response.get('Genre', 'N/A').split(", ")
-                movie.rating=float(response.get('imdbRating', 0)) if response.get('imdbRating') != 'N/A' else float(0)
                 movie.director=response.get('Director', 'N/A')
                 movie.actors=response.get('Actors', 'N/A').split(", ")
                 movie.plot=response.get('Plot', 'N/A')
@@ -226,8 +226,8 @@ class MovieDetailView(generic.DetailView):
         
         context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).order_by('?')[:5]
         context['avg_site_rating'] = reviews.aggregate(Avg('rating')).get('rating__avg')
-        context['reviews_count'] = reviews.count()
-        context['reviews_gte'] = reviews.select_related('user').filter(memo__gt=50).order_by('?')[:4]
+        context['votes_count'] = reviews.count()
+        context['reviews_gte'] = reviews.select_related('user').order_by('?')[:3]
         context['review_form'] = MovieReviewForm()
         if response.status_code == 200:
             context['imdb_votes'] = response.json().get('imdbVotes', 'N/A')
@@ -289,25 +289,6 @@ def rate_movie(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-""" def create_movie_review(request, pk):
-    if request.method == 'POST':
-        form = MovieReviewForm(request.POST)
-        if form.is_valid():
-            movie = get_object_or_404(Movie, pk=pk)
-            if not MovieReview.objects.filter(movie=movie, user=request.user).exists():
-                form.instance.user = request.user
-                form.instance.movie = get_object_or_404(Movie, pk=pk)
-                form.save()
-                messages.success(request, 'Your review has been posted.')
-            else:
-                messages.error(request, 'You already published a review.')
-        else:
-            messages.error(request, form.errors)
-    else:
-        messages.error(request, f'{request.method} not allowed.')
-    return redirect(request.META.get('HTTP_REFERER')) """
-
-
 class MovieReviewListView(generic.ListView):
     model = MovieReview
     context_object_name = 'reviews'
@@ -315,7 +296,7 @@ class MovieReviewListView(generic.ListView):
     template_name = "movies/review_list.html"
 
     def get_queryset(self):
-        qs = super().get_queryset().filter(movie__pk=self.kwargs.get('pk'))
+        qs = super().get_queryset().filter(movie__pk=self.kwargs.get('pk'), movie__slug=self.kwargs.get('slug'))
 
         return qs
     
@@ -330,6 +311,11 @@ class MovieReviewCreateView(generic.CreateView):
     form_class = MovieReviewForm
 
     def form_valid(self, form):
+        movie = get_object_or_404(Movie, pk=self.kwargs.get('pk'))
+        user = self.request.user
+        review = MovieReview.objects.filter(movie=movie, user=user)
+        if review.exists():
+            review.delete()
         form.instance.user = self.request.user
         form.instance.movie = get_object_or_404(Movie, pk=self.kwargs.get('pk'))
         messages.success(self.request, 'Your review has been posted.')

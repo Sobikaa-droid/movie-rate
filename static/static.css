@@ -425,6 +425,7 @@ h1 {
     font-size: 1.9rem;
   }
 
+
   /* if any input is checked, make its following siblings grey */
   .rating__input:checked ~ .rating__label .rating__icon--star {
     color: #6c757d !important;
@@ -504,12 +505,6 @@ h1 {
 
 .border_review:hover {
   background-color: #f0f0f0;
-}
-
-.review_bottom {
-  position: absolute; /* Position the bottom element absolutely */
-  bottom: 0;
-  width: 92%;
 }
 
 .review_green {

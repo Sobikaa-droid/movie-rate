@@ -14,28 +14,26 @@
                 <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
                 </form>
             </div>
-            <p class="page_description text-secondary lh-base">{{ movie.plot|striptags|truncatechars:500 }}</p>
-            {% if movie.plot|length >= 501 %}
-            <p>
-                <a class="link link-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-description">
-                Read full
-                </a>
-            </p>
-            <!-- Modal Show Description -->
-            <div class="modal fade" id="modal-show-description" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="ClearCartModalLabel">Description</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>{{ movie.plot }}</p>
+            <p class="page_description text-secondary lh-base">
+                {{ movie.plot|striptags|truncatechars:300 }}
+                {% if movie.plot|length > 300 %}
+                <a class="link link-dark" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-description">Read full</a>
+                <!-- Modal Show Description -->
+                <div class="modal fade" id="modal-show-description" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="ClearCartModalLabel">Description</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>{{ movie.plot }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {% endif %}
+                {% endif %}
+            </p>
             <!-- ############ -->
             <table class="table table-borderless mb-4" data-bs-theme="light">
                 <tbody>
@@ -108,7 +106,7 @@
                 </div>
             </div>
             <p class='text-secondary'>
-                {{ reviews_count }} vote{{ reviews_count|pluralize }}; IMDb: 
+                {{ votes_count }} vote{{ votes_count|pluralize }}; IMDb: 
                 <span class="{% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% elif imdb_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
                 {{ imdb_rating }}
                 </span> 
@@ -124,11 +122,11 @@
     </div>
     <div class="mb-5">
         <h1 class="page_other mb-4">Reviews</h1>
-        {% include 'movies/reviews_base.html' with reviews=reviews_gte width=70 columns=2 review_height=200 %}
+        {% include 'movies/reviews_base.html' with reviews=reviews_gte width=45 %}
         <div class="d-flex mt-5 mb-5">
             <a class="btn btn-lg btn-outline-dark me-4" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">Leave a review</a>
-            {% if reviews_count %}
-            <a class="link link-dark mt-3" href="{% url 'movies:review_list' movie.pk %}">See {{ reviews_count }} review{{ reviews_count|pluralize }}</a>
+            {% if reviews_gte %}
+            <a class="link link-dark mt-3" href="{% url 'movies:review_list' movie.slug movie.pk %}">See {{ votes_count }} review{{ votes_count|pluralize }}</a>
             {% endif %}
         </div>
         <div class="collapse" id="collapseExample">
