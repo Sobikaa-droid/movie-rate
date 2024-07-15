@@ -3,6 +3,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LogoutView
 from django.db.models import Prefetch
+from django.conf import settings
 from django.urls import reverse_lazy
 from django.views import generic
 from rest_framework import viewsets
@@ -59,6 +60,11 @@ class UserDetailView(generic.DetailView):
         qs = super().get_queryset().filter(is_staff=False)
 
         return qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        return context
 
 
 class UserUpdateView(generic.UpdateView):

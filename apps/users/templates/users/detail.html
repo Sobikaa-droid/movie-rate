@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}{{ user.username }}{% endblock %}
+{% block content %}
+{% load static %}
+{% load widget_tweaks %}
+<div class="container mt-5">
+  <div class="user_detail">
+    <div class="d-flex flex-wrap justify-content-center">
+      <div class="image_detail mt-5 mb-5">
+        {% if user.image %}
+        <img class="user_image user_detail_image" src="{{ user.image.url }}" alt="user_img">
+        {% else %}
+        <img class="user_image user_detail_image" src="{% static 'default.jpg' %}" alt="user_img">
+        {% endif %}
+      </div>
+      <div class='user_detail_info ms-5 w-50 mt-5 mb-5'>
+        <div class="d-flex">
+          <h1 class="flex-grow-1 page_other">{{ user.username }}</h1>
+          {% if request.user.pk == user.pk %}
+          <a class="btn btn-outline-dark" href="">Edit</a>
+          {% endif %}
+        </div>
+        <hr>
+        <p class="page_description text-secondary lh-base text-break">
+          {{ user.description|striptags|truncatechars:500 }}
+          {% if user.description|length >= 501 %}
+          <a class="link-dark text-decoration-none" href="#" role="button" data-bs-toggle="modal" data-bs-target="#modal-show-description">
+          Read Full
+          </a>
+          {% endif %}
+        </p>
+        {% if user.description|length >= 501 %}
+        <!-- Modal Show Description -->
+        <div class="modal fade" id="modal-show-description" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true" data-bs-theme="dark">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title text-dark" id="ClearCartModalLabel">Description</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p class="text-light text-break">{{ user.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ############ -->
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

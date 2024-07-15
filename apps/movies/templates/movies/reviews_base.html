@@ -1,3 +1,4 @@
+{% load static %}
 <div class="row row-cols-xxl-1 row-cols-xl-1 row-cols-lg-1 row-cols-md-1 row-cols-sm-1 g-5" style="width: {{ width }}%;">
     {% for review in reviews %}
     <div class="col">
@@ -43,7 +44,18 @@
                             {% endfor %}   
                         </div>
                         <div class="modal-footer justify-content-between">
-                            <p class='me-auto'>By @<a class='link link-dark text-decoration-none' href="{{ review.user.get_absolute_url }}">{{ review.user.username }}</a></p>
+                            <p class='me-auto'>
+                                <a class='link link-dark text-decoration-none' href="{{ review.user.get_absolute_url }}">
+                                {% if review.user.image %}
+                                <img src="{{ review.user.image.url }}" width="20" height="20" class="user_image" alt="user_image">
+                                {% else %}
+                                <img src="{% static 'default.jpg' %}" width="25" height="25" class="user_image" alt="Default Image">
+                                {% endif %}
+                                <span class='fw-medium ms-1' style="vertical-align: middle;">
+                                {{ review.user.username }}
+                                </span>
+                                </a>
+                            </p>
                             {% if review.user == request.user %}
                             <a class='link link-dark' href="{% url 'movies:update_review' review.pk %}">Edit Review</a>
                             {% endif %}
@@ -54,7 +66,16 @@
             </div>
             <div class="review_bottom mt-auto">
                 <div class='d-flex justify-content-between'>
-                    <span class='fw-medium'>@<a class='link link-dark text-decoration-none' href="{{ review.user.get_absolute_url }}">{{ review.user.username }}</a></span>
+                    <a class='link link-dark text-decoration-none' href="{{ review.user.get_absolute_url }}">
+                    {% if review.user.image %}
+                    <img src="{{ review.user.image.url }}" width="20" height="20" class="user_image" alt="user_image">
+                    {% else %}
+                    <img src="{% static 'default.jpg' %}" width="25" height="25" class="user_image" alt="Default Image">
+                    {% endif %}
+                    <span class='fw-medium ms-1' style="vertical-align: middle;">
+                    {{ review.user.username }}
+                    </span>
+                    </a>
                     <span class='text-secondary ms-auto'>{{ review.creation_date|date:"H:i, d.m.Y" }}</span>
                 </div>
             </div>

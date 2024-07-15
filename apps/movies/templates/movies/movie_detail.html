@@ -106,11 +106,14 @@
                 </div>
             </div>
             <p class='text-secondary'>
-                {{ votes_count }} vote{{ votes_count|pluralize }}; IMDb: 
+                {{ votes_count }} vote{{ votes_count|pluralize }}; 
+                {% if imdb_rating %}
+                IMDb: 
                 <span class="{% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% elif imdb_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
                 {{ imdb_rating }}
-                </span> 
+                </span>
                 ({{ imdb_votes }} votes);
+                {% endif %}
                 {% if my_review %}
                 My rating:
                 <span class="{% if my_review.rating < 5 %} text-danger {% elif my_review.rating < 7 %} text-warning {% elif my_review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">
