@@ -26,15 +26,15 @@
       </div>
       <div class="list-group mb-5 mt-5">
         {% for user in users %}
-        <a href="{{ user.get_absolute_url }}" class="list-group-item list-group-item-action">
+        <a href="{{ user.get_absolute_url }}" class="list-group-item list-group-item-action align-middle">
           <div class="d-flex align-middle">
             {% if user.image %}
             <img src="{{ user.image.url }}" width="60" height="60" class="me-3 user_image">
             {% else %}
             <img src="{% static 'default.jpg' %}" width="60" height="60" class="me-3 user_image">
             {% endif %}
-            <h5 class="text-dark me-auto" style="vertical-align: middle;">{{ user.username }}</h5>
-            <h5 style="vertical-align: middle;">song{{ user.song_count|pluralize }}</h5>
+            <h5 class="text-dark me-auto mb-auto mt-auto">{{ user.username }}</h5>
+            <h5 class='mb-auto mt-auto'>song{{ user.song_count|pluralize }}</h5>
           </div>
         </a>
         {% empty %}

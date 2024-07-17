@@ -528,6 +528,9 @@ h1 {
 
 /* USER DETAIL */
 .user_detail {
+  border-style: solid;
+  border-color: #dee2e6;
+  border-width: 1px;
   border-radius: 10px 10px 10px 10px;
 }
 
@@ -543,4 +546,30 @@ h1 {
 .user_detail_list_image {
   width: 175px;
   height: 175px;
+}
+
+/* SEPARATOR */
+
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #000;
+  color: #6c757d;
+  border-color: #6c757d;
+  opacity: .25;
+}
+
+.separator:not(:empty)::before {
+  margin-right: .25em;
+}
+
+.separator:not(:empty)::after {
+  margin-left: .25em;
 }
