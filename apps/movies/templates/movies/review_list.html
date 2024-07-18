@@ -7,7 +7,7 @@
     <div class="mb-5 mt-5 d-flex">
         <div class="reviews" style='width: 55%; margin-right: 10rem;'>
         <h1 class="page_other mb-4">Reviews: <a class="link link-secondary text-decoration-none" href="{{ movie.get_absolute_url }}">{{ movie.title }}</a></h1>
-        {% include 'movies/reviews_base.html' with reviews=reviews width=100 stars=True %}
+        {% include 'movies/reviews_base.html' with reviews=reviews width=100 %}
         </div>
         <div class="flex-shrink-0 page_detail_image_div">
             <img class="page_detail_image" src="{{ movie.poster }}" />

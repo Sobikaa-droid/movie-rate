@@ -84,8 +84,8 @@
     </div>
     <div class="mb-5">
         <div class='site_rating'>
-            <h1 class="page_other mb-2">Rating</h1>
-            <div class='d-flex rating_div mb-2 mt-3'>
+            <h1 class="page_other mb-1">Rating</h1>
+            <div class='d-flex rating_div mb-2 mt-1'>
                 <div class='rate me-2'>
                     <form action="{% url 'movies:rate_movie' movie.pk %}" method="POST">
                         {% csrf_token %}
@@ -100,25 +100,38 @@
                     </form>
                 </div>
                 <div class='rating'>
-                    <h1 class="rating_text {% if avg_site_rating < 5 %} text-danger {% elif avg_site_rating < 7 %} text-warning {% elif avg_site_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
+                    <h1 class="rating_text text-center {% if avg_site_rating < 5 %} text-danger {% elif avg_site_rating < 7 %} text-warning {% elif avg_site_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
                         {% if avg_site_rating %}{{ avg_site_rating|floatformat:"1" }}{% else %}0{% endif %}
                     </h1>
+                    <div class='text-center'>
+                        <span class="text-secondary">{{ votes_count }} vote{{ votes_count|pluralize }}</span>
+                    </div>
                 </div>
             </div>
-            <p class='text-secondary'>
-                {{ votes_count }} vote{{ votes_count|pluralize }}; 
-                {% if imdb_rating %}
-                IMDb: 
+            {% if my_rating %}
+            <form action="{% url 'movies:delete_rating' my_rating.pk %}" method="POST" id="frm_delete_rating"> {% csrf_token %}
+            </form>
+            {% endif %}
+            <p>
+                <span class='text-muted'>
+                IMDb:
+                </span>
                 <span class="{% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% elif imdb_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
                 {{ imdb_rating }}
                 </span>
-                ({{ imdb_votes }} votes);
-                {% endif %}
-                {% if my_review %}
-                My rating:
-                <span class="{% if my_review.rating < 5 %} text-danger {% elif my_review.rating < 7 %} text-warning {% elif my_review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">
-                {{ my_review.rating }}
+                <span class='text-secondary ms-2'>
+                {{ imdb_votes }} votes
                 </span>
+            </p>
+            <p class='text-secondary'>
+                {% if my_rating %}
+                <span class='text-muted'>
+                My rating:
+                </span>
+                <span class="{% if my_rating.rating < 5 %} text-danger {% elif my_rating.rating < 7 %} text-warning {% elif my_rating.rating <= 10 %} text-success {% else %} text-dark {% endif %}">
+                {{ my_rating.rating }}
+                </span>
+                <a href="javascript:$('#frm_delete_rating').submit();" class="link link-secondary ms-2">Delete</a>
                 {% endif %}
             </p>
         </div>
@@ -127,9 +140,9 @@
         <h1 class="page_other mb-4">Reviews</h1>
         {% include 'movies/reviews_base.html' with reviews=reviews_gte width=45 %}
         <div class="d-flex mt-5 mb-5">
-            <a class="btn btn-lg btn-outline-dark me-4" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">Leave a review</a>
+            <a class="btn btn-lg btn-outline-dark me-4" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"><i class="fa-solid fa-plus"></i> Leave a review</a>
             {% if reviews_gte %}
-            <a class="link link-dark mt-3" href="{% url 'movies:review_list' movie.slug movie.pk %}">See {{ votes_count }} review{{ votes_count|pluralize }}</a>
+            <a class="link link-dark mt-auto mb-auto" href="{% url 'movies:review_list' movie.slug movie.pk %}">See {{ reviews_count }} review{{ reviews_count|pluralize }}</a>
             {% endif %}
         </div>
         <div class="collapse" id="collapseExample">
@@ -138,18 +151,17 @@
                     {% csrf_token %}
                     {% for field in review_form %}
                     <div class="mb-3">
-                        <label class="form-label">{{ field.label_tag }}</label>
-                        {% if field.name == 'rating' %}
-                        <div id="full-stars-example-two-radio">
-                            <div class="rating-group-radio">
-                                <input disabled checked class="rating__input-radio" name="rating" id="rating3-0-radio" value="0" type="radio">
-                                {% for i in '0123456789'|make_list %}
-                                <label aria-label="{{ forloop.counter }} star-radio" class="rating__label-radio" for="rating3-{{ forloop.counter }}-radio"><i class="rating__icon-radio rating__icon--star-radio fa fa-star text-orange"></i></label>
-                                <input class="rating__input-radio" name="rating" id="rating3-{{ forloop.counter }}-radio" value="{{ forloop.counter }}" type="radio">
-                                {% endfor %}
-                            </div>
+                        {% if field.name == 'impression' %}
+                        <div>
+                        <input type="radio" class="btn-check" name="impression" id="option1" autocomplete="off" value="1">
+                        <label class="btn btn-outline-success" for="option1"><i class="fa-regular fa-thumbs-up"></i> Like</label>
+                        <input type="radio" class="btn-check" name="impression" id="option0" autocomplete="off" value="0" checked>
+                        <label class="btn btn-outline-secondary" for="option0">Neutral</label>
+                        <input type="radio" class="btn-check" name="impression" id="option-1" autocomplete="off" value="-1">
+                        <label class="btn btn-outline-danger" for="option-1"><i class="fa-regular fa-thumbs-down"></i> Dislike</label>
                         </div>
                         {% else %}
+                        <label class="form-label">{{ field.label_tag }}</label>
                         {% render_field field class="form-control" %}
                         {% endif %}
                         <div class="form-text">
@@ -157,7 +169,7 @@
                         </div>
                     </div>
                     {% endfor %}
-                    <a href="javascript:$('#frm_review_movie').submit();" class="btn btn-lg btn-dark">Post</a>
+                    <a href="javascript:$('#frm_review_movie').submit();" class="btn btn-lg btn-dark mt-2">Post</a>
                 </form>
             </div>
         </div>

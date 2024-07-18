@@ -11,10 +11,10 @@ from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 import requests
 
-from .models import Movie, FavMovie, MovieReview
+from .models import Movie, FavMovie, MovieReview, MovieRating
 from .permissions import IsStaffUser, IsStaffUserOrReadOnly
 from .serializers import MovieSerializer, MovieCreateSerializer, MovieCreateListSerializer
-from .forms import MovieReviewForm
+from .forms import MovieReviewForm, MovieRatingForm
 
 
 # API API API
@@ -222,12 +222,14 @@ class MovieDetailView(generic.DetailView):
         }
         yt_response = requests.get('https://www.googleapis.com/youtube/v3/search', params=yt_params)
         user = self.request.user
-        reviews = MovieReview.objects.filter(movie__pk=self.kwargs.get('pk'))
+        reviews = MovieReview.objects.filter(movie=self.object)
+        ratings = MovieRating.objects.filter(movie=self.object)
         
-        context['movies'] = Movie.objects.exclude(pk=self.kwargs.get('pk')).order_by('?')[:5]
-        context['avg_site_rating'] = reviews.aggregate(Avg('rating')).get('rating__avg')
-        context['votes_count'] = reviews.count()
-        context['reviews_gte'] = reviews.select_related('user').order_by('?')[:3]
+        context['movies'] = self.get_queryset().exclude(pk=self.kwargs.get('pk')).order_by('?')[:5]
+        context['avg_site_rating'] = ratings.aggregate(Avg('rating')).get('rating__avg')
+        context['votes_count'] = ratings.count()
+        context['reviews_count'] = reviews.count()
+        context['reviews_gte'] = reviews.select_related('user', 'movie').order_by('?')[:4]
         context['review_form'] = MovieReviewForm()
         if response.status_code == 200:
             context['imdb_votes'] = response.json().get('imdbVotes', 'N/A')
@@ -241,8 +243,8 @@ class MovieDetailView(generic.DetailView):
             
         if user.is_authenticated:
             context['is_saved'] = self.object.fav_movie_set.filter(user=user).exists()
-            if self.object.review_movie_set.filter(user=user).exists():
-                context['my_review'] = get_object_or_404(reviews, user=user)
+            if self.object.rating_movie_set.filter(user=user).exists():
+                context['my_rating'] = get_object_or_404(ratings, user=user)
 
         return context
     
@@ -263,6 +265,9 @@ def fav_or_unfav_movie(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
+# MOVIE RATING MOVIE RATING MOVIE RATING MOVIE RATING MOVIE RATING MOVIE RATING MOVIE RATING 
+
+
 def rate_movie(request, pk):
     if request.method == 'POST':
         form = MovieReviewForm(request.POST)
@@ -270,7 +275,7 @@ def rate_movie(request, pk):
             movie = get_object_or_404(Movie, pk=pk)
             rating = request.POST.get('rating', None)
 
-            review, created = MovieReview.objects.get_or_create(
+            obj, created = MovieRating.objects.get_or_create(
                 movie=movie,
                 user=request.user,
                 defaults={
@@ -278,8 +283,8 @@ def rate_movie(request, pk):
                 }
             )
             if not created:
-                review.rating = rating
-                review.save()
+                obj.rating = rating
+                obj.save()
 
             messages.success(request, f'{movie.title} rated {rating}.')
         else:
@@ -289,36 +294,18 @@ def rate_movie(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-class MovieReviewListView(generic.ListView):
-    model = MovieReview
-    context_object_name = 'reviews'
-    paginate_by = 10
-    template_name = "movies/review_list.html"
-
-    def get_queryset(self):
-        qs = super().get_queryset().filter(movie__pk=self.kwargs.get('pk'), movie__slug=self.kwargs.get('slug'))
-
-        return qs
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['movie'] = get_object_or_404(Movie, pk=self.kwargs.get('pk'))
-
-        return context
-
-
-class MovieReviewCreateView(generic.CreateView):
-    form_class = MovieReviewForm
+""" class MovieRatingCreateView(generic.CreateView):
+    form_class = MovieRatingForm
 
     def form_valid(self, form):
         movie = get_object_or_404(Movie, pk=self.kwargs.get('pk'))
         user = self.request.user
-        review = MovieReview.objects.filter(movie=movie, user=user)
-        if review.exists():
-            review.delete()
-        form.instance.user = self.request.user
-        form.instance.movie = get_object_or_404(Movie, pk=self.kwargs.get('pk'))
-        messages.success(self.request, 'Your review has been posted.')
+        rating = MovieRating.objects.filter(movie=movie, user=user)
+        if rating.exists():
+            rating.delete()
+        form.instance.user = user
+        form.instance.movie = movie
+        messages.success(self.request, f'{movie.title} rated {form.instance.rating}.')
 
         return super().form_valid(form)
 
@@ -328,7 +315,86 @@ class MovieReviewCreateView(generic.CreateView):
         return super().form_invalid(form)
 
     def get_success_url(self):
+        return self.object.movie.get_absolute_url() """
+    
+
+class MovieRatingDeleteView(generic.DeleteView):
+    model = MovieRating
+
+    def get_object(self, queryset=None):
+        object = get_object_or_404(super().get_queryset(), user=self.request.user, pk=self.kwargs.get('pk'))
+
+        return object
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Your rating has been successfully deleted.')
+
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, form.errors)
+
+        return super().form_invalid(form)
+    
+    def get_success_url(self):
         return self.object.movie.get_absolute_url()
+
+
+# MOVIE REVIEW MOVIE REVIEW MOVIE REVIEW MOVIE REVIEW MOVIE REVIEW MOVIE REVIEW MOVIE REVIEW 
+
+class MovieReviewListView(generic.ListView):
+    model = MovieReview
+    context_object_name = 'reviews'
+    paginate_by = 10
+    template_name = "movies/review_list.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('user', 'movie').filter(movie__pk=self.kwargs.get('pk'), movie__slug=self.kwargs.get('slug'))
+
+        return qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['movie'] = get_object_or_404(Movie, pk=self.kwargs.get('pk'))
+
+        return context
+    
+
+def review_movie(request, pk):
+    if request.method == 'POST':
+        form = MovieReviewForm(request.POST)
+        if form.is_valid():
+            movie = get_object_or_404(Movie, pk=pk)
+            user = request.user
+            form.instance.user = user
+            form.instance.movie = movie
+            form.save()
+            messages.success(request, f'Your review for {movie.title} has been posted.')
+        else:
+            messages.error(request, form.errors)
+    else:
+        messages.error(request, f'{request.method} not allowed.')
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+
+""" class MovieReviewCreateView(generic.CreateView):
+    form_class = MovieReviewForm
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.movie = get_object_or_404(Movie, pk=self.kwargs.get('pk'))
+        messages.success(self.request, f'{form.instance.movie} review has been posted.')
+
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, form.errors)
+
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return self.object.movie.get_absolute_url() """
     
 
 class MovieReviewUpdateView(generic.UpdateView):

@@ -22,42 +22,54 @@
               </div>
             </div>
             <div class='user-info-part mb-auto mt-auto d-flex'>
-              <div class="text-center">
-                <h3 class='fw-bold' style='margin-bottom: 0;'>300</h3>
+              <div class="text-center me-4">
+                <h3 class='fw-bold' style='margin-bottom: 0;'>8</h3>
                 <small class='text-secondary'>Movies</small>
+              </div>
+              <div class="text-center me-4">
+                <h3 class='fw-bold' style='margin-bottom: 0;'>2</h3>
+                <small class='text-secondary'>Favorites</small>
+              </div>
+              <div class="text-center me-4">
+                <h3 class='fw-bold' style='margin-bottom: 0;'>3</h3>
+                <small class='text-secondary'>Ratings</small>
+              </div>
+              <div class="text-center">
+                <h3 class='fw-bold' style='margin-bottom: 0;'>3</h3>
+                <small class='text-secondary'>Reviews</small>
               </div>
             </div>
         </div>
-        <ul class="nav nav_filter_by nav-underline justify-content-center border mt-4 mb-4 rounded">
+        <ul class="nav nav_filter_by nav-underline justify-content-center border border-secondary border-opacity-25 mt-4 mb-4 rounded">
           <li class="nav-item">
-              <a class="nav-link {% if request.GET.filter_val == None %} active {% endif %} link-dark me-3" aria-current="page" href="{% url 'movies:list' %}">
+              <a class="nav-link {% if request.GET.filter_val == None %} link-dark {% endif %} me-3" aria-current="page" href="{% url 'movies:list' %}">
                   <h5>Profile</h5>
               </a>
           </li>
           <li class="nav-item">
-              <a class="nav-link {% if request.GET.filter_val == 'movie' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=movie">
+              <a class="nav-link {% if request.GET.filter_val == 'movie' %} link-dark {% endif %} me-3" href="{% url 'movies:list' %}?filter_val=movie">
                   <h5>Films</h5>
               </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.GET.filter_val == 'movie' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=movie">
+            <a class="nav-link {% if request.GET.filter_val == 'movie' %} link-dark {% endif %} me-3" href="{% url 'movies:list' %}?filter_val=movie">
                 <h5>Favorites</h5>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.GET.filter_val == 'movie' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=movie">
+            <a class="nav-link {% if request.GET.filter_val == 'movie' %} link-dark {% endif %} me-3" href="{% url 'movies:list' %}?filter_val=movie">
                 <h5>Watchlist</h5>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.GET.filter_val == 'movie' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=movie">
+            <a class="nav-link {% if request.GET.filter_val == 'movie' %} link-dark {% endif %} me-3" href="{% url 'movies:list' %}?filter_val=movie">
                 <h5>Reviews</h5>
             </a>
           </li>
         </ul>
         <div class='user-favorites mt-5'>
           <div class='d-flex'>
-            <h2 class='fw-lighter me-auto'>Favorites</h2>
+            <h4 class='fw-bold me-auto'>Favorites</h4>
             {% if user.fav_user_set.all.count > 5 %}
             <a class='mb-auto mt-auto link link-secondary text-decoration-none' href=''>See all</a>
             {% endif %}

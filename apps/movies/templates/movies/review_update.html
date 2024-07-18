@@ -11,17 +11,17 @@
           {% csrf_token %}
           {% for field in form %}
           <div class="mb-3">
-            <label class="form-label">{{ field.label_tag }}</label>
-            {% if field.name == 'rating' %}
-            <div id="full-stars-example-two-radio">
-                <div class="rating-group-radio">
-                    {% for i in '0123456789'|make_list %}
-                    <label aria-label="{{ forloop.counter }} star-radio" class="rating__label-radio" for="rating3-{{ forloop.counter }}-radio"><i class="rating__icon-radio rating__icon--star-radio fa fa-star text-orange"></i></label>
-                    <input {% if review.rating == forloop.counter %} checked {% endif %} class="rating__input-radio" name="rating" id="rating3-{{ forloop.counter }}-radio" value="{{ forloop.counter }}" type="radio">
-                    {% endfor %}
-                </div>
+            {% if field.name == 'impression' %}
+            <div>
+            <input type="radio" class="btn-check" name="impression" id="option1" autocomplete="off" value="1" {% if review.impression == 1 %} checked {% endif %}>
+            <label class="btn btn-outline-success" for="option1"><i class="fa-regular fa-thumbs-up"></i> Like</label>
+            <input type="radio" class="btn-check" name="impression" id="option0" autocomplete="off" value="0" {% if review.impression == 0 %} checked {% endif %}>
+            <label class="btn btn-outline-secondary" for="option0">Neutral</label>
+            <input type="radio" class="btn-check" name="impression" id="option-1" autocomplete="off" value="-1" {% if review.impression == -1 %} checked {% endif %}>
+            <label class="btn btn-outline-danger" for="option-1"><i class="fa-regular fa-thumbs-down"></i> Dislike</label>
             </div>
             {% else %}
+            <label class="form-label">{{ field.label_tag }}</label>
             {% render_field field class="form-control" %}
             {% endif %}
             <div class="form-text">
@@ -30,7 +30,7 @@
           </div>
           {% endfor %}
         </form>
-        <div class="d-flex">
+        <div class="d-flex mt-4">
             <a class='btn btn-dark me-auto' href="javascript:$('#frm_edit_review').submit();">Save</a>
             <a class='btn btn-outline-danger' href='#' data-bs-toggle="modal" data-bs-target="#modal-show-review-deletion">Delete</a>
             <div class="modal fade" id="modal-show-review-deletion" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
@@ -53,6 +53,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class='mt-5'>
+          <a class='link link-secondary text-decoration-none' href="{{ review.movie.get_absolute_url }}">
+            <h5>
+            <i class="fa-solid fa-arrow-left"></i> {{ review.movie.title }}
+            </h5>
+          </a>
         </div>
       </div>
     </div>

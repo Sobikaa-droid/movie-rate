@@ -57,12 +57,28 @@ class FavMovie(models.Model):
 
     def __str__(self):
         return f"{self.user}: {self.movie}"
+    
+
+class MovieRating(models.Model):
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='rating_movie_set')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rating_user_set')
+    rating = models.IntegerField(default=0, validators=[MaxValueValidator(10), MinValueValidator(1)])
+    creation_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-pk']
+        constraints = [
+            models.UniqueConstraint(fields=['movie', 'user'], name='unique_rating_movie_per_user')
+        ]
+
+    def __str__(self):
+        return f"{self.user}: {self.movie} - {self.rating}"
 
 
 class MovieReview(models.Model):
-    title = models.CharField(max_length=350, blank=True, null=True)
-    memo = models.TextField(max_length=9999, blank=True, null=True)
-    rating = models.IntegerField(default=0, validators=[MaxValueValidator(10), MinValueValidator(1)])
+    title = models.CharField(max_length=50)
+    memo = models.TextField(max_length=2000)
+    impression = models.IntegerField(default=0, validators=[MaxValueValidator(1), MinValueValidator(-1)])
     creation_date = models.DateTimeField(auto_now_add=True)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='review_movie_set')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='review_user_set')
@@ -74,5 +90,5 @@ class MovieReview(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user}: {self.movie}"
+        return f"{self.user}: {self.movie} - {self.impression}"
     

@@ -18,8 +18,9 @@ urlpatterns = [
     path('detail/<slug:slug>-<int:pk>/', views.MovieDetailView.as_view(), name='detail'),
     path('fav-movie/<int:pk>/', login_required(views.fav_or_unfav_movie, login_url='users:register'), name='fav_movie'),
     path('rate-movie/<int:pk>/', login_required(views.rate_movie, login_url='users:register'), name='rate_movie'),
+    path('delete-rating/<int:pk>/', login_required(views.MovieRatingDeleteView.as_view(), login_url='users:register'), name='delete_rating'),
     path('reviews/<slug:slug>-<int:pk>/', login_required(views.MovieReviewListView.as_view(), login_url='users:register'), name='review_list'),
-    path('review-movie/<int:pk>/', login_required(views.MovieReviewCreateView.as_view(), login_url='users:register'), name='review_movie'),
+    path('review-movie/<int:pk>/', login_required(views.review_movie, login_url='users:register'), name='review_movie'),
     path('update-review/<int:pk>/', login_required(views.MovieReviewUpdateView.as_view(), login_url='users:register'), name='update_review'),
     path('delete-review/<int:pk>/', login_required(views.MovieReviewDeleteView.as_view(), login_url='users:register'), name='delete_review'),
 ]

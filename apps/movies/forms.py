@@ -1,14 +1,14 @@
 from django import forms
 
-from .models import MovieReview
+from .models import MovieReview, MovieRating
 
 
 class MovieReviewForm(forms.ModelForm):
-    rating = forms.IntegerField(max_value=10, min_value=1, label='Rating')
+    impression = forms.IntegerField(max_value=1, min_value=-1)
 
     class Meta:
         model = MovieReview
-        fields = ['title', 'memo', 'rating']
+        fields = ['title', 'memo', 'impression']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,3 +17,15 @@ class MovieReviewForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field.required:
                 field.label = f'{field.label}*'
+
+
+class MovieRatingForm(forms.ModelForm):
+    rating = forms.IntegerField(max_value=10, min_value=1)
+
+    class Meta:
+        model = MovieRating
+        fields = ['rating']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.label_suffix = ""  # Removes ':' as label suffix

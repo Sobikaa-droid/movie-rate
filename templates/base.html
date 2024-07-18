@@ -36,7 +36,7 @@
             <li class="nav-item dropdown">
               <a class="nav-link nav_link_base" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-toggle="dropdown"> 
                 {% if request.user.is_staff %}
-                {{ request.user.username }} <i class="fa-solid fa-shield-halved text-dark">
+                {{ request.user.username }} <i class="fa-solid fa-shield-halved text-dark"></i>
                 {% elif request.user.image %}
                 <img src="{{ request.user.image.url }}" width="28" height="28" class="user_image" alt="user_image">
                 {% else %}

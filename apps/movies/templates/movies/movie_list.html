@@ -19,17 +19,17 @@
         </div>
         <ul class="nav nav_filter_by nav-underline justify-content-center ms-5 me-auto">
             <li class="nav-item">
-                <a class="nav-link {% if request.GET.filter_val == None %} active {% endif %} link-dark me-3" aria-current="page" href="{% url 'movies:list' %}">
+                <a class="nav-link {% if request.GET.filter_val == None %} active link-dark {% endif %} me-3" aria-current="page" href="{% url 'movies:list' %}">
                     <h5>All</h5>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.GET.filter_val == 'series' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=series">
+                <a class="nav-link {% if request.GET.filter_val == 'series' %} active link-dark {% endif %} me-3" href="{% url 'movies:list' %}?filter_val=series">
                     <h5>Series</h5>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.GET.filter_val == 'movie' %} active {% endif %} link-dark me-3" href="{% url 'movies:list' %}?filter_val=movie">
+                <a class="nav-link {% if request.GET.filter_val == 'movie' %} active link-dark {% endif %} me-3" href="{% url 'movies:list' %}?filter_val=movie">
                     <h5>Movies</h5>
                 </a>
             </li>

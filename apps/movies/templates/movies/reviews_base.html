@@ -2,46 +2,32 @@
 <div class="row row-cols-xxl-1 row-cols-xl-1 row-cols-lg-1 row-cols-md-1 row-cols-sm-1 g-5" style="width: {{ width }}%;">
     {% for review in reviews %}
     <div class="col">
-        <div class="border_review p-3 {% if review.rating < 5 %} review_red {% elif review.rating < 7 %} review_yellow {% elif review.rating <= 10 %} review_green {% endif %}">
+        <div class="border_review p-3 {% if review.impression == -1 %} review_red {% elif review.impression == 0 %} review_gray {% elif review.impression == 1 %} review_green {% endif %}">
             <a href="#" class="link stretched-link" data-bs-toggle="modal" data-bs-target="#modal-show-review{{forloop.counter}}"></a>
             <h4 class="d-flex justify-content-between align-items-center mb-3">
-                {% if review.title %}
-                <span class="text-dark fst-italic me-auto">{{ review.title|striptags|truncatechars:15 }}</span>
-                {% endif %}
-                {% if stars %}
-                <div class='me-3'>
-                    {% for i in '0123456789'|make_list %}
-                    {% if forloop.counter <= review.rating|floatformat:"0"|add:"0" %}
-                    <h5 class="fa-solid fa-star text-orange"></h5>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-                {% endif %}
-                <span class="fw-bold {% if review.rating < 5 %} text-danger {% elif review.rating < 7 %} text-warning {% elif review.rating <= 10 %} text-success {% else %} text-dark {% endif %}">{{ review.rating }}</span>
+                <span class="text-dark fst-italic me-auto">{{ review.title|striptags|truncatechars:30 }}</span>
             </h4>
-            <p class='text-secondary'>{% if review.memo %}{{ review.memo|striptags|truncatechars:140 }}{% endif %}</p>
+            <p class='text-secondary'>{% if review.memo %}{{ review.memo|striptags|truncatechars:1000 }}{% endif %}</p>
             <!-- Modal Show Description -->
             <div class="modal fade" id="modal-show-review{{forloop.counter}}" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="ClearCartModalLabel">
-                                <span class="text-dark me-auto">Review #{{ review.pk }}</span>
+                                <span class="text-dark me-auto">{{ review.movie.title }} review #{{ review.pk }}</span>
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            {% if review.title %}
                             <h5 class="text-dark fst-italic">{{ review.title|striptags|truncatechars:25 }}</h5>
-                            {% endif %}
-                            {% if review.memo %}
                             <p class='text-secondary'>{{ review.memo }}</p>
+                            {% if review.impression == 1 %}
+                            <h5 class="text-success">Like</h5>
+                            {% elif review.impression == 0 %}
+                            <h5 class="text-secondary">Neutral</h5>
+                            {% elif review.impression == -1 %}
+                            <h5 class="text-secondary">Dislike</h5>
                             {% endif %}
-                            {% for i in '0123456789'|make_list %}
-                            {% if forloop.counter <= review.rating|floatformat:"0"|add:"0" %}
-                            <h5 class="fa-solid fa-star text-orange"></h5>
-                            {% endif %}
-                            {% endfor %}   
                         </div>
                         <div class="modal-footer justify-content-between">
                             <p class='me-auto'>
