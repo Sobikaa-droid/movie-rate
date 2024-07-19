@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LogoutView
-from django.db.models import Prefetch
+from django.db.models import Exists, OuterRef, Prefetch, Q, Avg
 from django.conf import settings
 from django.urls import reverse_lazy
 from django.views import generic
@@ -13,6 +13,7 @@ from .models import TunedUser
 from .serializers import CustomUserSerializer
 from .forms import UserCreateForm, UserUpdateForm, UserLoginForm
 from .permissions import UserPermission
+from apps.movies.models import MovieRating, MovieReview, FavMovie, Movie
 
 
 # pagination class
@@ -57,12 +58,27 @@ class UserDetailView(generic.DetailView):
     template_name = 'users/detail.html'
 
     def get_queryset(self):
-        qs = super().get_queryset().filter(is_staff=False)
+        prefetch_favs = Prefetch(
+            'fav_user_set',
+            queryset=FavMovie.objects.select_related("movie")
+        )
+        prefetch_reviews = Prefetch(
+            'review_user_set',
+            queryset=MovieReview.objects.select_related("movie")
+        )
+        qs = super().get_queryset().prefetch_related(prefetch_favs, prefetch_reviews).filter(is_staff=False)
 
         return qs
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        movies = Movie.objects.annotate(
+                is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=self.object)),
+                is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=self.object)),
+                user_rating=Avg('rating_movie_set__rating', filter=Q(rating_movie_set__user=self.object))
+            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(user_rating__isnull=False))
+
+        context['movies'] = movies
 
         return context
 
