@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Movie, FavMovie, MovieReview
+from .models import Movie, FavMovie, MovieReview, MovieRating
 
 
 class MovieAdmin(admin.ModelAdmin):
@@ -33,3 +33,14 @@ class MovieReviewAdmin(admin.ModelAdmin):
 
 
 admin.site.register(MovieReview, MovieReviewAdmin)
+
+
+class MovieRatingAdmin(admin.ModelAdmin):
+    list_per_page = 20
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs
+
+
+admin.site.register(MovieRating, MovieRatingAdmin)

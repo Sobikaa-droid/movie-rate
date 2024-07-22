@@ -270,21 +270,20 @@ def fav_or_unfav_movie(request, pk):
 
 def rate_movie(request, pk):
     if request.method == 'POST':
-        form = MovieReviewForm(request.POST)
+        form = MovieRatingForm(request.POST)
         if form.is_valid():
             movie = get_object_or_404(Movie, pk=pk)
             rating = request.POST.get('rating', None)
+            user = request.user
 
-            obj, created = MovieRating.objects.get_or_create(
+            qs = MovieRating.objects.filter(movie=movie, user=user)
+            if qs.exists():
+                qs.first().delete()
+            MovieRating.objects.create(
                 movie=movie,
                 user=request.user,
-                defaults={
-                    'rating': rating
-                }
+                rating=rating,
             )
-            if not created:
-                obj.rating = rating
-                obj.save()
 
             messages.success(request, f'{movie.title} rated {rating}.')
         else:

@@ -9,7 +9,7 @@ from django.views import generic
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
-from .models import TunedUser
+from .models import TunedUser, UserActivity
 from .serializers import CustomUserSerializer
 from .forms import UserCreateForm, UserUpdateForm, UserLoginForm
 from .permissions import UserPermission
@@ -72,13 +72,15 @@ class UserDetailView(generic.DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        movies = Movie.objects.annotate(
+        """ movies = Movie.objects.annotate(
                 is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=self.object)),
                 is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=self.object)),
                 user_rating=Avg('rating_movie_set__rating', filter=Q(rating_movie_set__user=self.object))
             ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(user_rating__isnull=False))
 
-        context['movies'] = movies
+        context['movies'] = movies """
+
+        context['activities'] = UserActivity.objects.filter(user=self.object).order_by('-created_at')
 
         return context
 

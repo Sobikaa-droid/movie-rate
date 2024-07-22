@@ -72,62 +72,65 @@
             </a>
           </li>
         </ul>
-        <div class='user-favorites mt-5'>
-          <h4 class='fw-bold mb-3'>Favorites</h4>
-          <div class="row row-cols-xxl-5 row-cols-xl-5 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-4">
-            {% for fav in user.fav_user_set.all|slice:":4" %}
-            <div class="col">
-                <div class="card bg-transparent">
-                    <a href="{{ fav.movie.get_absolute_url }}" class="card_image_link text-decoration-none">
-                    <img src="{{ fav.movie.poster }}" class="card-img-top card_gradient page_detail_other_image" style='width: 170px; height: 275px;' />
-                    </a>
+        <div class='user-info-columns d-flex'>
+          <div class='user-left-info me-auto' style='max-width: 80%;'>
+            <div class='user-favorites mt-5'>
+              <h4 class='fw-bold mb-3'>Favorites</h4>
+              <hr>
+              <div class="row row-cols-xxl-5 row-cols-xl-5 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-4">
+                {% for fav in user.fav_user_set.all|slice:":3" %}
+                <div class="col">
+                    <div class="card bg-transparent">
+                        <a href="{{ fav.movie.get_absolute_url }}" class="card_image_link text-decoration-none">
+                        <img src="{{ fav.movie.poster }}" class="card-img-top card_gradient page_detail_other_image" style='width: 140px; height: 210px;' />
+                        </a>
+                    </div>
                 </div>
+                {% endfor %}
+                {% if user.fav_user_set.all.count > 3 %}
+                  <a href="" class="link link-secondary text-decoration-none text-center mt-auto mb-auto">
+                  <h4><i class="fa-solid fa-ellipsis"></i></h4>
+                  </a>
+                {% endif %}
+              </div>
             </div>
-            {% endfor %}
-            {% if user.fav_user_set.all.count > 4 %}
-              <a href="" class="link link-secondary text-decoration-none text-center mt-auto mb-auto">
-              <h4><i class="fa-solid fa-ellipsis"></i></h4>
-              </a>
-            {% endif %}
-          </div>
-        </div>
-        <div class='user-activity mt-5'>
-          <h4 class='fw-bold mb-3'>Activity</h4>
-          <div class="row row-cols-xxl-5 row-cols-xl-5 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-4">
-            {% for obj in movies|slice:":4" %}
-            <div class="col">
-                <div class="card bg-transparent">
-                    <a href="{{ obj.get_absolute_url }}" class="card_image_link text-decoration-none">
-                    <img src="{{ obj.poster }}" class="card-img-top card_gradient page_detail_other_image" style='width: 170px; height: 275px;' />
-                    </a>
-                </div>
-                <div class='mt-2 text-center'>
-                  {% if obj.is_reviewed %}
-                  <i class="fa-solid fa-bars-staggered"></i>
-                  {% endif %}
-                  {% if obj.is_saved %}
-                  <i class="fa-solid fa-heart text-danger"></i>
-                  {% endif %}
-                  {% if obj.is_rated %}
-                  <i class="fa-solid fa-heart text-danger"></i>
-                  {% endif %}
-                  {% if obj.user_rating %}
-                  <i class="fa-solid fa-star text-orange"></i> <span class="{% if obj.user_rating < 5 %} text-danger {% elif obj.user_rating < 7 %} text-warning {% elif obj.user_rating <= 10 %} text-success {% endif %}">{{ obj.user_rating }}</span>
-                  {% endif %}
-                </div>
+            <div class='user-reviews mt-5' >
+              <h4 class='fw-bold mb-3'>Reviews</h4>
+              <hr>
+              {% include 'movies/reviews_base.html' with reviews=user.review_user_set.all|slice:":4" width=70 %}
             </div>
-            {% endfor %}
-            {% if movies.count > 4 %}
-            <a href="" class="link link-secondary text-decoration-none text-center mt-auto mb-auto">
-            <h4><i class="fa-solid fa-ellipsis"></i></h4>
-            </a>
-            {% endif %}
           </div>
-        </div>
-        <div class='user-reviews mt-5' >
-          <h4 class='fw-bold mb-3'>Reviews</h4>
-          {% include 'movies/reviews_base.html' with reviews=user.review_user_set.all|slice:":4" width=70 %}
-        </div>
+          <div class='user-right-info'>
+            <div class='user-activity mt-5'>
+              <h4 class='fw-bold'>Activity</h4>
+              <hr>
+              <ul class="list-group list-group-flush">
+                {% for obj in activities|slice:":5" %}
+                <li class="list-group-item">
+                  {% if obj.type == 'review' %}
+                  <span class='text-secondary'>Reviewed </span>
+                  <a href="{{ obj.active_review.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                    {{ obj.active_review.movie.title }}
+                  </a>
+                  {% elif obj.type == 'favorite' %}
+                  <span class='text-secondary'>Favorited </span>
+                  <a href="{{ obj.active_favorite.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                    {{ obj.active_favorite.movie.title }}
+                  </a>
+                  {% elif obj.type == 'rating' %}
+                  <span class='text-secondary'>Rated </span><span class="{% if obj.active_rating.rating < 5 %} text-danger {% elif obj.active_rating.rating < 7 %} text-warning {% elif obj.active_rating.rating <= 10 %} text-success {% endif %}">{{ obj.active_rating.rating }}</span>
+                  <a href="{{ obj.active_rating.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                    {{ obj.active_rating.movie.title }}
+                  </a>
+                  {% endif %}
+                  <br>
+                  <small class='text-muted'>{{ obj.created_at|timesince }} ago</small>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>  
       </div>
     </div>
   </div>
