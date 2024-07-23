@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.urls import reverse
@@ -29,10 +29,32 @@ class TunedUser(AbstractUser):
         return reverse('users:detail', args=[self.pk])
 
 
-class UserActivity(models.Model):
+class UserReviewActivity(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    active_review = models.ForeignKey(MovieReview, on_delete=models.CASCADE, null=True, blank=True)
-    active_rating = models.ForeignKey(MovieRating, on_delete=models.CASCADE, null=True, blank=True)
-    active_favorite = models.ForeignKey(FavMovie, on_delete=models.CASCADE, null=True, blank=True)
+    review = models.ForeignKey(MovieReview, on_delete=models.CASCADE, related_name='review_activity_set')
     type = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.type}'
+    
+
+class UserFavoriteActivity(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    favorite = models.ForeignKey(FavMovie, on_delete=models.CASCADE, related_name='favorite_activity_set')
+    type = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.type}'
+
+
+class UserRatingActivity(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.ForeignKey(MovieRating, on_delete=models.CASCADE, related_name='rating_activity_set')
+    type = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.type}'
+    

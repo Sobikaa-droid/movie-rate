@@ -1,23 +1,23 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-from .models import UserActivity
+from .models import UserFavoriteActivity, UserReviewActivity, UserRatingActivity
 from apps.movies.models import MovieRating, MovieReview, FavMovie
 
 
 # REVIEW
 @receiver(post_save, sender=MovieReview)
 def log_review_activity(sender, instance, created, **kwargs):
-    UserActivity.objects.create(
+    UserReviewActivity.objects.create(
         user=instance.user,
-        active_review=instance,
+        review=instance,
         type='review',
     )
 
 
 @receiver(post_delete, sender=MovieReview)
 def log_review_delete_activity(sender, instance, **kwargs):
-    qs = UserActivity.objects.filter(user=instance.user, active_review=instance)
+    qs = UserReviewActivity.objects.filter(user=instance.user, review=instance)
     if qs.exists():
         qs.first().delete()
 
@@ -29,16 +29,16 @@ def log_rating_activity(sender, instance, created, **kwargs):
     if qs.exists():
         qs.first().delete() """
 
-    UserActivity.objects.create(
+    UserRatingActivity.objects.create(
         user=instance.user,
-        active_rating=instance,
+        rating=instance,
         type='rating',
     )
 
 
 @receiver(post_delete, sender=MovieRating)
 def log_rating_delete_activity(sender, instance, **kwargs):
-    qs = UserActivity.objects.filter(user=instance.user, active_rating=instance)
+    qs = UserRatingActivity.objects.filter(user=instance.user, rating=instance)
     if qs.exists():
         qs.first().delete()
 
@@ -46,15 +46,15 @@ def log_rating_delete_activity(sender, instance, **kwargs):
 # FAVORITE 
 @receiver(post_save, sender=FavMovie)
 def log_favorite_activity(sender, instance, created, **kwargs):
-    UserActivity.objects.create(
+    UserFavoriteActivity.objects.create(
         user=instance.user,
-        active_favorite=instance,
+        favorite=instance,
         type='favorite',
     )
 
 
 @receiver(post_delete, sender=FavMovie)
 def log_favorite_delete_activity(sender, instance, **kwargs):
-    qs = UserActivity.objects.filter(user=instance.user, active_favorite=instance)
+    qs = UserFavoriteActivity.objects.filter(user=instance.user, favorite=instance)
     if qs.exists():
         qs.first().delete()

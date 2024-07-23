@@ -85,9 +85,6 @@ class MovieReview(models.Model):
 
     class Meta:
         ordering = ['-pk']
-        constraints = [
-            models.UniqueConstraint(fields=['movie', 'user'], name='unique_review_movie_per_user')
-        ]
 
     def __str__(self):
         return f"{self.user}: {self.movie} - {self.impression}"

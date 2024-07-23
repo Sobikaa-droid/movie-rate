@@ -21,6 +21,10 @@ h1 {
   color: black;
 }
 
+hr {
+  margin: 0;
+}
+
 .badge {
   display: inline;
 }

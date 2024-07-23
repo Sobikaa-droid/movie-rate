@@ -136,9 +136,9 @@
             </p>
         </div>
     </div>
-    <div class="mb-5">
+    <div class="mb-5" style='width: 45%;'>
         <h1 class="page_other mb-4">Reviews</h1>
-        {% include 'movies/reviews_base.html' with reviews=reviews_gte width=45 %}
+        {% include 'movies/reviews_base.html' with reviews=reviews_gte %}
         <div class="d-flex mt-5 mb-5">
             <a class="btn btn-lg btn-outline-dark me-4" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"><i class="fa-solid fa-plus"></i> Leave a review</a>
             {% if reviews_gte %}
@@ -146,7 +146,7 @@
             {% endif %}
         </div>
         <div class="collapse" id="collapseExample">
-            <div class="card card-body" style='width: 40%;'>
+            <div class="card card-body" style='width: 80%;'>
                 <form action="{% url 'movies:review_movie' movie.pk %}" method="POST" id="frm_review_movie">
                     {% csrf_token %}
                     {% for field in review_form %}

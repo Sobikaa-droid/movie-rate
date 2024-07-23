@@ -23,19 +23,19 @@
             </div>
             <div class='user-info-part mb-auto mt-auto d-flex'>
               <div class="text-center me-4">
-                <h3 class='fw-bold' style='margin-bottom: 0;'>8</h3>
-                <small class='text-secondary'>Movies</small>
+                <h3 class='fw-bold' style='margin-bottom: 0;'>{{ films_count }}</h3>
+                <small class='text-secondary'>Films</small>
               </div>
               <div class="text-center me-4">
-                <h3 class='fw-bold' style='margin-bottom: 0;'>2</h3>
+                <h3 class='fw-bold' style='margin-bottom: 0;'>{{ favorites_count }}</h3>
                 <small class='text-secondary'>Favorites</small>
               </div>
               <div class="text-center me-4">
-                <h3 class='fw-bold' style='margin-bottom: 0;'>3</h3>
+                <h3 class='fw-bold' style='margin-bottom: 0;'>{{ ratings_count }}</h3>
                 <small class='text-secondary'>Ratings</small>
               </div>
               <div class="text-center">
-                <h3 class='fw-bold' style='margin-bottom: 0;'>3</h3>
+                <h3 class='fw-bold' style='margin-bottom: 0;'>{{ reviews_count }}</h3>
                 <small class='text-secondary'>Reviews</small>
               </div>
             </div>
@@ -73,54 +73,48 @@
           </li>
         </ul>
         <div class='user-info-columns d-flex'>
-          <div class='user-left-info me-auto' style='max-width: 80%;'>
-            <div class='user-favorites mt-5'>
-              <h4 class='fw-bold mb-3'>Favorites</h4>
-              <hr>
-              <div class="row row-cols-xxl-5 row-cols-xl-5 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-4">
-                {% for fav in user.fav_user_set.all|slice:":3" %}
+          <div class='user-left-info me-auto'>
+            <div class='user-favorites mt-5 w-75'>
+              <div class='d-flex justify-content-between'>
+              <h4 class='fw-bold mb-3'>Recent favorites</h4>
+              </div>
+              <div class="row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 g-4">
+                {% for fav in user.fav_user_set.all|slice:":4" %}
                 <div class="col">
                     <div class="card bg-transparent">
                         <a href="{{ fav.movie.get_absolute_url }}" class="card_image_link text-decoration-none">
-                        <img src="{{ fav.movie.poster }}" class="card-img-top card_gradient page_detail_other_image" style='width: 140px; height: 210px;' />
+                        <img src="{{ fav.movie.poster }}" class="card-img-top card_gradient page_detail_other_image" style='width: 140px; height: 200px;' />
                         </a>
                     </div>
                 </div>
                 {% endfor %}
-                {% if user.fav_user_set.all.count > 3 %}
-                  <a href="" class="link link-secondary text-decoration-none text-center mt-auto mb-auto">
-                  <h4><i class="fa-solid fa-ellipsis"></i></h4>
-                  </a>
-                {% endif %}
               </div>
             </div>
-            <div class='user-reviews mt-5' >
-              <h4 class='fw-bold mb-3'>Reviews</h4>
-              <hr>
-              {% include 'movies/reviews_base.html' with reviews=user.review_user_set.all|slice:":4" width=70 %}
+            <div class='user-reviews mt-5 w-75'>
+              <h4 class='fw-bold mb-3'>Recent reviews</h4>
+              {% include 'movies/reviews_base.html' with reviews=user.review_user_set.all|slice:":4" width=100 %}
             </div>
           </div>
           <div class='user-right-info'>
             <div class='user-activity mt-5'>
               <h4 class='fw-bold'>Activity</h4>
-              <hr>
               <ul class="list-group list-group-flush">
                 {% for obj in activities|slice:":5" %}
                 <li class="list-group-item">
                   {% if obj.type == 'review' %}
                   <span class='text-secondary'>Reviewed </span>
-                  <a href="{{ obj.active_review.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
-                    {{ obj.active_review.movie.title }}
+                  <a href="{{ obj.review.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                    {{ obj.review.movie.title }}
                   </a>
                   {% elif obj.type == 'favorite' %}
                   <span class='text-secondary'>Favorited </span>
-                  <a href="{{ obj.active_favorite.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
-                    {{ obj.active_favorite.movie.title }}
+                  <a href="{{ obj.favorite.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                    {{ obj.favorite.movie.title }}
                   </a>
                   {% elif obj.type == 'rating' %}
-                  <span class='text-secondary'>Rated </span><span class="{% if obj.active_rating.rating < 5 %} text-danger {% elif obj.active_rating.rating < 7 %} text-warning {% elif obj.active_rating.rating <= 10 %} text-success {% endif %}">{{ obj.active_rating.rating }}</span>
-                  <a href="{{ obj.active_rating.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
-                    {{ obj.active_rating.movie.title }}
+                  <span class='text-secondary'>Rated <span class="{% if obj.rating.rating < 5 %} text-danger {% elif obj.rating.rating < 7 %} text-warning {% elif obj.rating.rating <= 10 %} text-success {% endif %}">{{ obj.rating.rating }}</span></span>
+                  <a href="{{ obj.rating.movie.get_absolute_url }}" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                    {{ obj.rating.movie.title }}
                   </a>
                   {% endif %}
                   <br>
