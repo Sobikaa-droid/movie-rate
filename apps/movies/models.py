@@ -89,3 +89,17 @@ class MovieReview(models.Model):
     def __str__(self):
         return f"{self.user}: {self.movie} - {self.impression}"
     
+
+class MovieWatchLater(models.Model):
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='wl_movie_set')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wl_user_set')
+
+    class Meta:
+        ordering = ['-pk']
+        constraints = [
+            models.UniqueConstraint(fields=['movie', 'user'], name='unique_wl_movie_per_user')
+        ]
+
+    def __str__(self):
+        return f"{self.user}: {self.movie}"
+    

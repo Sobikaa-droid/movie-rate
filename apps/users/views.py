@@ -10,11 +10,11 @@ from itertools import chain
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
-from .models import TunedUser, UserRatingActivity, UserFavoriteActivity, UserReviewActivity
+from .models import TunedUser, UserRatingActivity, UserFavoriteActivity, UserReviewActivity, UserWatchLaterActivity
 from .serializers import CustomUserSerializer
 from .forms import UserCreateForm, UserUpdateForm, UserLoginForm
 from .permissions import UserPermission
-from apps.movies.models import MovieRating, MovieReview, FavMovie, Movie
+from apps.movies.models import MovieRating, MovieReview, FavMovie
 
 
 # pagination class
@@ -67,7 +67,11 @@ class UserDetailView(generic.DetailView):
             'review_user_set',
             queryset=MovieReview.objects.select_related("movie")
         )
-        qs = super().get_queryset().prefetch_related(prefetch_favs, prefetch_reviews).filter(is_staff=False)
+        prefetch_ratings = Prefetch(
+            'rating_user_set',
+            queryset=MovieRating.objects.select_related("movie")
+        )
+        qs = super().get_queryset().prefetch_related(prefetch_favs, prefetch_reviews, prefetch_ratings).filter(is_staff=False)
 
         return qs
     
@@ -86,6 +90,7 @@ class UserDetailView(generic.DetailView):
         user_favorite_activity = UserFavoriteActivity.objects.prefetch_related('favorite__movie').filter(user=user)
         user_review_activity = UserRatingActivity.objects.select_related('rating__movie').filter(user=user)
         user_rating_activity = UserReviewActivity.objects.select_related('review__movie').filter(user=user)
+        user_wl_activity = UserWatchLaterActivity.objects.select_related('wl__movie').filter(user=user)
 
         ratings_count = MovieRating.objects.filter(user=user).count()
         reviews_count = MovieReview.objects.filter(user=user).count()
@@ -95,7 +100,7 @@ class UserDetailView(generic.DetailView):
         context['reviews_count'] = reviews_count
         context['favorites_count'] = favorites_count
         context['films_count'] = ratings_count + ratings_count + favorites_count
-        context['activities'] = sorted(chain(user_favorite_activity, user_review_activity, user_rating_activity), key=lambda x: x.created_at, reverse=True)
+        context['activities'] = sorted(chain(user_favorite_activity, user_review_activity, user_rating_activity, user_wl_activity), key=lambda x: x.created_at, reverse=True)
 
         return context
 

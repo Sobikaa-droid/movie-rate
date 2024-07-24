@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.urls import reverse
 
-from apps.movies.models import MovieReview, FavMovie, MovieRating, Movie
+from apps.movies.models import MovieReview, FavMovie, MovieRating, MovieWatchLater
 
 
 class TunedUser(AbstractUser):
@@ -52,6 +52,16 @@ class UserFavoriteActivity(models.Model):
 class UserRatingActivity(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     rating = models.ForeignKey(MovieRating, on_delete=models.CASCADE, related_name='rating_activity_set')
+    type = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.type}'
+    
+
+class UserWatchLaterActivity(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    wl = models.ForeignKey(MovieWatchLater, on_delete=models.CASCADE, related_name='wl_activity_set')
     type = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
 

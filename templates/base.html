@@ -25,9 +25,6 @@
               <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/movies/' %} nav-link-active active {% endif %}" href="{% url 'movies:list' %}">Films</a>
             </li>
             <li class="nav-item ms-5">
-              <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/tops/' %} nav-link-active active {% endif %}" href="">Tops</a>
-            </li>
-            <li class="nav-item ms-5">
               <a class="nav-link nav-link-fade-up nav_link_base {% if request.path == '/users/' %} nav-link-active active {% endif %}" href="{% url 'users:list' %}">Users</a>
             </li>
           </ul>
@@ -77,8 +74,18 @@
         </div>
       </div>
     </nav>
+
+
     {% block content %}
     {% endblock %}
+
+    {% comment %} <footer class='container'>
+      <hr class='border border-1 opacity-75 footer_hr'>
+      <div class="text-center text-secondary">
+        <p class='mt-3'>© CINEMA {% now "Y" %} ®</p>
+      </div>
+    </footer> {% endcomment %}
+
     <!-- MESSAGES -->
     {% if messages %}
     {% for message in messages %}

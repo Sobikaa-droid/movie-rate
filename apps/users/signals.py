@@ -1,8 +1,8 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-from .models import UserFavoriteActivity, UserReviewActivity, UserRatingActivity
-from apps.movies.models import MovieRating, MovieReview, FavMovie
+from .models import UserFavoriteActivity, UserReviewActivity, UserRatingActivity, UserWatchLaterActivity
+from apps.movies.models import MovieRating, MovieReview, FavMovie, MovieWatchLater
 
 
 # REVIEW
@@ -56,5 +56,22 @@ def log_favorite_activity(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=FavMovie)
 def log_favorite_delete_activity(sender, instance, **kwargs):
     qs = UserFavoriteActivity.objects.filter(user=instance.user, favorite=instance)
+    if qs.exists():
+        qs.first().delete()
+
+
+# WATCH LATER
+@receiver(post_save, sender=MovieWatchLater)
+def log_wl_activity(sender, instance, created, **kwargs):
+    UserWatchLaterActivity.objects.create(
+        user=instance.user,
+        wl=instance,
+        type='wl',
+    )
+
+
+@receiver(post_delete, sender=MovieWatchLater)
+def log_wl_delete_activity(sender, instance, **kwargs):
+    qs = UserWatchLaterActivity.objects.filter(user=instance.user, wl=instance)
     if qs.exists():
         qs.first().delete()

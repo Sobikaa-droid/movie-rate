@@ -1,9 +1,9 @@
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Avg
+from django.db.models import Avg
 from django.views import generic
 from django.contrib import messages
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse
 from django.utils.text import slugify
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,7 +11,7 @@ from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 import requests
 
-from .models import Movie, FavMovie, MovieReview, MovieRating
+from .models import Movie, FavMovie, MovieReview, MovieRating, MovieWatchLater
 from .permissions import IsStaffUser, IsStaffUserOrReadOnly
 from .serializers import MovieSerializer, MovieCreateSerializer, MovieCreateListSerializer
 from .forms import MovieReviewForm, MovieRatingForm
@@ -184,7 +184,7 @@ class UpdateMovieListAPIView(APIView):
 class MovieListView(generic.ListView):
     model = Movie
     context_object_name = 'movies'
-    paginate_by = 10
+    paginate_by = 20
     template_name = "movies/movie_list.html"
 
     def get_queryset(self):
@@ -243,6 +243,7 @@ class MovieDetailView(generic.DetailView):
             
         if user.is_authenticated:
             context['is_saved'] = self.object.fav_movie_set.filter(user=user).exists()
+            context['is_wled'] = self.object.wl_movie_set.filter(user=user).exists()
             if self.object.rating_movie_set.filter(user=user).exists():
                 context['my_rating'] = get_object_or_404(ratings, user=user)
 
@@ -446,3 +447,21 @@ class MovieReviewDeleteView(generic.DeleteView):
     
     def get_success_url(self):
         return self.object.movie.get_absolute_url()
+
+
+# WATCH LATER
+
+def wl_or_unwl_movie(request, pk):
+    if request.method == 'POST':
+        movie = get_object_or_404(Movie, pk=pk)
+        wl_movie, created = MovieWatchLater.objects.get_or_create(user=request.user, movie=movie)
+
+        if created:
+            messages.success(request, f'{movie.title} saved to watch later.')
+        else:
+            wl_movie.delete()
+            messages.success(request, f'{movie.title} unsaved from watch later.')
+    else:
+        messages.error(request, f'{request.method} not allowed.')
+
+    return redirect(request.META.get('HTTP_REFERER'))

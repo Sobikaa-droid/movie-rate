@@ -14,7 +14,7 @@
                 <span class="text-danger"><i class="fa-regular fa-face-frown"></i></span>
                 {% endif %}
             </h4>
-            <p class='text-secondary'>{% if review.memo %}{{ review.memo|striptags|truncatechars:1000 }}{% endif %}</p>
+            <p class='text-secondary' style='word-wrap: break-word;'>{% if review.memo %}{{ review.memo|striptags|truncatechars:1000 }}{% endif %}</p>
             <!-- Modal Show Description -->
             <div class="modal fade" id="modal-show-review{{forloop.counter}}" tabindex="-1" aria-labelledby="DescriptionModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
@@ -22,13 +22,16 @@
                         <div class="modal-header">
                             <h5 class="modal-title" id="ClearCartModalLabel">
                                 <span class="text-dark me-auto">
-                                    <a class='link-secondary text-decoration-none' href="{{ review.movie.get_absolute_url}}">{{ review.movie.title }}</a>
+                                    <a class='link-secondary text-decoration-none' href="{{ review.movie.get_absolute_url}}">
+                                        <img src="{{ review.movie.poster }}" class="review_movie_poster review_movie_poster_modal me-1">
+                                        <span class='align-middle'>{{ review.movie.title|striptags|truncatechars:60 }}</span>
+                                    </a>
                                 </span>
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <h5 class="text-dark fst-italic mb-3">{{ review.title|striptags|truncatechars:25 }}</h5>
+                            <h5 class="text-dark fst-italic mb-3">{{ review.title }}</h5>
                             <span class='text-secondary'>{{ review.memo }}</span>
                             <h6 class='mt-3'>
                             {% if review.impression == 1 %}
@@ -44,7 +47,7 @@
                             <p class='me-auto'>
                                 <a class='link link-dark text-decoration-none' href="{{ review.user.get_absolute_url }}">
                                 {% if review.user.image %}
-                                <img src="{{ review.user.image.url }}" width="20" height="20" class="user_image" alt="user_image">
+                                <img src="{{ review.user.image.url }}" width="25" height="25" class="user_image" alt="user_image">
                                 {% else %}
                                 <img src="{% static 'default.jpg' %}" width="25" height="25" class="user_image" alt="Default Image">
                                 {% endif %}
@@ -65,15 +68,15 @@
                 <div class='d-flex justify-content-between'>
                     <a class='link link-dark text-decoration-none' href="{{ review.user.get_absolute_url }}">
                     {% if review.user.image %}
-                    <img src="{{ review.user.image.url }}" width="20" height="20" class="user_image" alt="user_image">
+                    <img src="{{ review.user.image.url }}" width="25" height="25" class="user_image" alt="user_image">
                     {% else %}
                     <img src="{% static 'default.jpg' %}" width="25" height="25" class="user_image" alt="Default Image">
                     {% endif %}
-                    <span class='fw-medium ms-1' style="vertical-align: middle;">
-                    {{ review.user.username }}
-                    </span>
+                    <span class='fw-medium ms-1 me-3 align-middle'>{{ review.user.username }}</span>
+                    <img src="{{ review.movie.poster }}" class="review_movie_poster me-1">
+                    <span class='text-muted align-middle'>{{ review.movie.title|striptags|truncatechars:25 }}</span>
                     </a>
-                    <span class='text-secondary ms-auto'>{{ review.creation_date|date:"H:i, d.m.Y" }}</span>
+                    <span class='text-secondary ms-auto align-middle'>{{ review.creation_date|timesince }} ago</span>
                 </div>
             </div>
         </div>
