@@ -48,6 +48,7 @@ class Movie(models.Model):
 class FavMovie(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='fav_movie_set')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='fav_user_set')
+    creation_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-pk']
@@ -93,6 +94,7 @@ class MovieReview(models.Model):
 class MovieWatchLater(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='wl_movie_set')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wl_user_set')
+    creation_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-pk']

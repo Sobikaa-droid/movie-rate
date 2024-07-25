@@ -30,7 +30,7 @@ class TunedUser(AbstractUser):
 
 
 class UserReviewActivity(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='review_activity_user_set')
     review = models.ForeignKey(MovieReview, on_delete=models.CASCADE, related_name='review_activity_set')
     type = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -40,7 +40,7 @@ class UserReviewActivity(models.Model):
     
 
 class UserFavoriteActivity(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorite_activity_user_set')
     favorite = models.ForeignKey(FavMovie, on_delete=models.CASCADE, related_name='favorite_activity_set')
     type = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -50,7 +50,7 @@ class UserFavoriteActivity(models.Model):
 
 
 class UserRatingActivity(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rating_activity_user_set')
     rating = models.ForeignKey(MovieRating, on_delete=models.CASCADE, related_name='rating_activity_set')
     type = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -60,7 +60,7 @@ class UserRatingActivity(models.Model):
     
 
 class UserWatchLaterActivity(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wl_activity_user_set')
     wl = models.ForeignKey(MovieWatchLater, on_delete=models.CASCADE, related_name='wl_activity_set')
     type = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)

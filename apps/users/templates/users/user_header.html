@@ -46,8 +46,9 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {% if request.GET.filter_val == 'movie' %} link-dark {% endif %} me-3" href="">
-        <h5>Films</h5>
+      {% url 'users:user_activity' user.pk as activity_url %}
+      <a class="nav-link {% if request.path == activity_url %} link-dark {% endif %} me-3" href="{% url 'users:user_activity' user.pk %}">
+        <h5>Activity</h5>
       </a>
     </li>
     <li class="nav-item">

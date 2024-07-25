@@ -2,8 +2,11 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LogoutView
-from django.db.models import Exists, OuterRef, Prefetch, Q, Avg
+from django.db.models import Exists, OuterRef, Prefetch, Q, Avg, Count
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
 from django.urls import reverse_lazy
 from django.views import generic
 from itertools import chain
@@ -14,7 +17,7 @@ from .models import TunedUser, UserRatingActivity, UserFavoriteActivity, UserRev
 from .serializers import CustomUserSerializer
 from .forms import UserCreateForm, UserUpdateForm, UserLoginForm
 from .permissions import UserPermission
-from apps.movies.models import MovieRating, MovieReview, FavMovie
+from apps.movies.models import MovieRating, MovieReview, FavMovie, Movie
 
 
 # pagination class
@@ -35,7 +38,7 @@ class UserListView(generic.ListView):
     model = TunedUser
     context_object_name = 'users'
     paginate_by = 15
-    template_name = "users/list.html"
+    template_name = "users/users.html"
 
     def get_queryset(self):
         qs = super().get_queryset().filter(is_staff=False)
@@ -56,7 +59,7 @@ class UserListView(generic.ListView):
 class UserDetailView(generic.DetailView):
     model = TunedUser
     context_object_name = 'user'
-    template_name = 'users/detail.html'
+    template_name = 'users/user_detail.html'
 
     def get_queryset(self):
         prefetch_favs = Prefetch(
@@ -77,32 +80,63 @@ class UserDetailView(generic.DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        """ movies = Movie.objects.annotate(
+
+        films = Movie.objects.annotate(
                 is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=self.object)),
                 is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=self.object)),
                 user_rating=Avg('rating_movie_set__rating', filter=Q(rating_movie_set__user=self.object))
-            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(user_rating__isnull=False)) """
-
-        """ context['movies'] = movies """
+            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(user_rating__isnull=False))
 
         user = self.object
         
-        user_favorite_activity = UserFavoriteActivity.objects.prefetch_related('favorite__movie').filter(user=user)
-        user_review_activity = UserRatingActivity.objects.select_related('rating__movie').filter(user=user)
-        user_rating_activity = UserReviewActivity.objects.select_related('review__movie').filter(user=user)
-        user_wl_activity = UserWatchLaterActivity.objects.select_related('wl__movie').filter(user=user)
+        user_favorite_activity = user.favorite_activity_user_set.select_related('favorite__movie')
+        user_review_activity = user.rating_activity_user_set.select_related('rating__movie')
+        user_rating_activity = user.review_activity_user_set.select_related('review__movie')
+        user_wl_activity = user.wl_activity_user_set.select_related('wl__movie')
 
-        ratings_count = MovieRating.objects.filter(user=user).count()
-        reviews_count = MovieReview.objects.filter(user=user).count()
-        favorites_count = FavMovie.objects.filter(user=user).count()
+        ratings_count = user.rating_user_set.count()
+        reviews_count = user.review_user_set.count()
+        favorites_count = user.fav_user_set.count()
 
         context['ratings_count'] = ratings_count
         context['reviews_count'] = reviews_count
         context['favorites_count'] = favorites_count
-        context['films_count'] = ratings_count + ratings_count + favorites_count
-        context['activities'] = sorted(chain(user_favorite_activity, user_review_activity, user_rating_activity, user_wl_activity), key=lambda x: x.created_at, reverse=True)
+        context['films_count'] = films.count()
+        context['activities'] = sorted(
+            chain(user_favorite_activity, 
+                  user_review_activity, 
+                  user_rating_activity, 
+                  user_wl_activity), 
+            key=lambda x: x.created_at, reverse=True)[:5]
 
         return context
+    
+
+class UserActivityView(generic.ListView):
+    context_object_name = 'activity'
+    template_name = 'users/user_activity.html'
+
+    def get_queryset(self):
+        user = get_object_or_404(TunedUser, pk=self.kwargs.get('user_pk'), is_staff=False)
+
+        user_favorite_activity = user.favorite_activity_user_set.select_related('favorite__movie')
+        user_review_activity = user.rating_activity_user_set.select_related('rating__movie')
+        user_rating_activity = user.review_activity_user_set.select_related('review__movie')
+        user_wl_activity = user.wl_activity_user_set.select_related('wl__movie')
+
+        activity = sorted(
+            chain(user_favorite_activity, 
+                  user_review_activity, 
+                  user_rating_activity, 
+                  user_wl_activity), 
+            key=lambda x: x.created_at, reverse=True)[:5]
+
+        qs = {
+            'activities': activity,
+            'user': user,
+        }
+
+        return qs
 
 
 class UserUpdateView(generic.UpdateView):
