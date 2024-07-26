@@ -141,6 +141,9 @@
   </div>
   <div class="mb-5" style='width: 45%;'>
     <h1 class="page_other mb-4">Reviews</h1>
+    {% if not reviews_gte %}
+    <h5 class='text-secondary'>No one reviewed this movie.</h5>
+    {% endif %}
     {% include 'movies/reviews_base.html' with reviews=reviews_gte %}
     <div class="d-flex mt-5 mb-5">
       <a class="btn btn-lg btn-outline-dark me-4" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"><i class="fa-solid fa-plus"></i> Leave a review</a>

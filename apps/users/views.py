@@ -74,33 +74,30 @@ class UserDetailView(generic.DetailView):
             'rating_user_set',
             queryset=MovieRating.objects.select_related("movie")
         )
-        qs = super().get_queryset().prefetch_related(prefetch_favs, prefetch_reviews, prefetch_ratings).filter(is_staff=False)
+        qs = super().get_queryset().prefetch_related(
+            prefetch_favs,
+            prefetch_reviews,
+            prefetch_ratings
+            ).filter(is_staff=False)
 
         return qs
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        films = Movie.objects.annotate(
-                is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=self.object)),
-                is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=self.object)),
-                user_rating=Avg('rating_movie_set__rating', filter=Q(rating_movie_set__user=self.object))
-            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(user_rating__isnull=False))
-
         user = self.object
+
+        films = Movie.objects.annotate(
+                is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=user)),
+                is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=user)),
+                user_rating=Avg('rating_movie_set__rating', filter=Q(rating_movie_set__user=user))
+            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(user_rating__isnull=False))
         
         user_favorite_activity = user.favorite_activity_user_set.select_related('favorite__movie')
         user_review_activity = user.rating_activity_user_set.select_related('rating__movie')
         user_rating_activity = user.review_activity_user_set.select_related('review__movie')
         user_wl_activity = user.wl_activity_user_set.select_related('wl__movie')
 
-        ratings_count = user.rating_user_set.count()
-        reviews_count = user.review_user_set.count()
-        favorites_count = user.fav_user_set.count()
-
-        context['ratings_count'] = ratings_count
-        context['reviews_count'] = reviews_count
-        context['favorites_count'] = favorites_count
         context['films_count'] = films.count()
         context['activities'] = sorted(
             chain(user_favorite_activity, 
@@ -113,8 +110,8 @@ class UserDetailView(generic.DetailView):
     
 
 class UserActivityView(generic.ListView):
-    context_object_name = 'activity'
-    template_name = 'users/user_activity.html'
+    context_object_name = 'qs'
+    template_name = 'users/user_objects.html'
 
     def get_queryset(self):
         user = get_object_or_404(TunedUser, pk=self.kwargs.get('user_pk'), is_staff=False)
@@ -124,20 +121,82 @@ class UserActivityView(generic.ListView):
         user_rating_activity = user.review_activity_user_set.select_related('review__movie')
         user_wl_activity = user.wl_activity_user_set.select_related('wl__movie')
 
-        activity = sorted(
+        activity_objects = sorted(
             chain(user_favorite_activity, 
                   user_review_activity, 
                   user_rating_activity, 
                   user_wl_activity), 
-            key=lambda x: x.created_at, reverse=True)[:5]
+            key=lambda x: x.created_at, reverse=True)
+        
+        films = Movie.objects.annotate(
+                is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=user)),
+                is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=user)),
+                is_rated=Exists(MovieRating.objects.filter(movie=OuterRef('pk'), user=user))
+            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(is_rated=True))
 
         qs = {
-            'activities': activity,
+            'objects': activity_objects,
             'user': user,
+            'films_count': films.count()
+        }
+
+        return qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['template_base'] = 'users/user_activity_base.html'
+        return context
+
+
+class UserObjectsListViewBase(generic.ListView):
+    context_object_name = 'qs'
+    template_name = 'users/user_objects.html'
+
+    def get_queryset(self):
+        user = get_object_or_404(TunedUser, pk=self.kwargs.get('user_pk'), is_staff=False)
+        objects = super().get_queryset().select_related('user', 'movie').filter(user=user)
+        
+        films = Movie.objects.annotate(
+                is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=user)),
+                is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=user)),
+                is_rated=Exists(MovieRating.objects.filter(movie=OuterRef('pk'), user=user))
+            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(is_rated=True))
+
+        qs = {
+            'objects': objects,
+            'user': user,
+            'films_count': films.count()
         }
 
         return qs
 
+
+class UserFavoritesView(UserObjectsListViewBase):
+    model = FavMovie
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['template_base'] = 'users/user_favorites_base.html'
+        return context
+    
+
+class UserRatingsView(UserObjectsListViewBase):
+    model = MovieRating
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['template_base'] = 'users/user_ratings_base.html'
+        return context
+
+
+class UserReviewsView(UserObjectsListViewBase):
+    model = MovieReview
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['template_base'] = 'users/user_reviews_base.html'
+        return context
+    
 
 class UserUpdateView(generic.UpdateView):
     model = TunedUser

@@ -1,0 +1,9 @@
+<div class="row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 gy-5 gx-5 text-center mb-5">
+  {% for fav in qs.objects %}
+  <div class="col">
+    <a href="{{ fav.movie.get_absolute_url }}" class="card_image_link text-decoration-none">   
+    <img src="{{ fav.movie.poster }}" class="card_image">
+    </a>
+  </div>
+  {% endfor %}
+</div>

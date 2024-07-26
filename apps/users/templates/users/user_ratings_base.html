@@ -1,0 +1,11 @@
+<table class="table">
+  {% for rating in qs.objects %}
+  <tbody>
+    <tr>
+      <td><a class="link-secondary text-decoration-none" href="{{ rating.movie.get_absolute_url }}">{{ rating.movie.title }}</a></td>
+      <th><span class="{% if rating.rating < 5 %} text-danger {% elif rating.rating < 7 %} text-warning {% elif rating.rating <= 10 %} text-success {% endif %}">{{ rating.rating }}</span></th>
+      <td class='text-muted'><small>{{ rating.creation_date|date:"d.m.Y" }}</small></td>
+    </tr>
+  </tbody>
+  {% endfor %}
+</table>

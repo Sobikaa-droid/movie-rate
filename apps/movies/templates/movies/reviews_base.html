@@ -57,9 +57,9 @@
                                 </a>
                             </p>
                             {% if review.user == request.user %}
-                            <a class='link link-secondary' href="{% url 'movies:update_review' review.pk %}">Edit</a>
+                            <a class='link-secondary text-decoration-none me-2' href="{% url 'movies:update_review' review.pk %}"><i class="fa-solid fa-pencil"></i></a>
                             {% endif %}
-                            <p class='text-secondary'>{{ review.creation_date|date:"H:i, d.m.Y" }}</p>
+                            <small class='text-muted'>{{ review.creation_date|date:"H:i, d.m.Y" }}</small>
                         </div>
                     </div>
                 </div>
@@ -72,11 +72,11 @@
                     {% else %}
                     <img src="{% static 'default.jpg' %}" width="25" height="25" class="user_image" alt="Default Image">
                     {% endif %}
-                    <span class='fw-medium ms-1 me-3 align-middle'>{{ review.user.username }}</span>
+                    <span class='fw-medium ms-1 me-3 align-middle text-muted'>{{ review.user.username }}</span>
                     <img src="{{ review.movie.poster }}" class="review_movie_poster me-1">
                     <span class='text-muted align-middle'>{{ review.movie.title|striptags|truncatechars:25 }}</span>
                     </a>
-                    <span class='text-secondary ms-auto align-middle'>{{ review.creation_date|timesince }} ago</span>
+                    <small class='text-muted ms-auto align-middle'>{{ review.creation_date|timesince }}</small>
                 </div>
             </div>
         </div>
