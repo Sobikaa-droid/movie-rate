@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}{{ request.user.username }}{% endblock %}
+{% block content %}
+{% load widget_tweaks %}
+{% load static %}
+<div class="container mt-5 mb-5">
+  <div class="user_detail d-flex flex-wrap justify-content-center">
+    <div class="image_detail mt-5 mb-5">
+      {% if request.user.image %}
+      <img class="user_image user_detail_image" src="{{ request.user.image.url }}" alt="user_img">
+      {% else %}
+      <img class="user_image user_detail_image" src="{% static 'default.jpg' %}" alt="user_img">
+      {% endif %}
+    </div>
+    <div class='user_detail_info ms-5 w-50 mt-5 mb-5'>
+      <form method="POST" enctype="multipart/form-data" id='frm_save_user'>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label text-muted">{{ field.label_tag }}</label>
+          {% if field.name == 'year_of_birth' %}
+          {% render_field field class="form-control" placeholder=field.label type="date" %}
+          {% else %}
+          {% render_field field class="form-control" %}
+          {% endif %}
+        </div>
+        {% endfor %}
+      </form>
+      <div class="d-flex">
+        <a class='btn btn-dark me-auto' href="javascript:$('#frm_save_user').submit();">Save</a>
+        <a href='#' class="btn btn-cart_delete btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modal-delete-user">
+          Delete
+        </a>
+        <!-- Modal Clear Cart -->
+        <div class="modal fade" id="modal-delete-user" tabindex="-1" aria-labelledby="DeleteModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title text-dark" id="ClearCartModalLabel">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p class='text-secondary'>Are you sure you want to delete your profile? This action is irreversible.</p>
+              </div>
+              <div class="modal-footer">
+                <form method="POST" action=""> {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger" id="delete_user">Yes</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ############ -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

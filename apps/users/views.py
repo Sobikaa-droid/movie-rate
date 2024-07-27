@@ -1,23 +1,27 @@
 from django.contrib import messages
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login
 from django.contrib.auth.views import LogoutView
-from django.db.models import Exists, OuterRef, Prefetch, Q, Avg, Count
-from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.db.models import Exists, OuterRef, Prefetch, Q, Avg
 from django.db.models.base import Model as Model
-from django.db.models.query import QuerySet
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
+from django.utils.text import slugify
 from django.views import generic
-from itertools import chain
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
+from itertools import chain
+import requests
 
-from .models import TunedUser, UserRatingActivity, UserFavoriteActivity, UserReviewActivity, UserWatchLaterActivity
+from .models import TunedUser, Country
 from .serializers import CustomUserSerializer
 from .forms import UserCreateForm, UserUpdateForm, UserLoginForm
 from .permissions import UserPermission
 from apps.movies.models import MovieRating, MovieReview, FavMovie, Movie
+from apps.movies.permissions import IsStaffUser
 
 
 # pagination class
@@ -28,7 +32,7 @@ class ListPagination(PageNumberPagination):
 
 
 class UserAPIViewSet(viewsets.ModelViewSet):
-    queryset = TunedUser.objects.filter(is_staff=False).order_by('-pk')
+    queryset = TunedUser.objects.order_by('-pk')
     serializer_class = CustomUserSerializer
     permission_classes = [UserPermission]
     pagination_class = ListPagination
@@ -41,7 +45,7 @@ class UserListView(generic.ListView):
     template_name = "users/users.html"
 
     def get_queryset(self):
-        qs = super().get_queryset().filter(is_staff=False)
+        qs = super().get_queryset()
 
         filter_val = self.request.GET.get('filter_val', None)
         search_val = self.request.GET.get('search_val', None)
@@ -78,7 +82,7 @@ class UserDetailView(generic.DetailView):
             prefetch_favs,
             prefetch_reviews,
             prefetch_ratings
-            ).filter(is_staff=False)
+            ).all().distinct('id')
 
         return qs
     
@@ -109,12 +113,53 @@ class UserDetailView(generic.DetailView):
         return context
     
 
-class UserActivityView(generic.ListView):
+class UserUpdateView(generic.UpdateView):
+    form_class = UserUpdateForm
+    template_name = 'users/user_update.html'
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Your profile has been updated.')
+
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, form.errors)
+
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
+
+class UserObjectsListViewBase(generic.ListView):
     context_object_name = 'qs'
     template_name = 'users/user_objects.html'
 
     def get_queryset(self):
-        user = get_object_or_404(TunedUser, pk=self.kwargs.get('user_pk'), is_staff=False)
+        user = get_object_or_404(TunedUser.objects.distinct('id'), pk=self.kwargs.get('user_pk'))
+        objects = super().get_queryset().select_related('user', 'movie').filter(user=user)
+        
+        films = Movie.objects.annotate(
+                is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=user)),
+                is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=user)),
+                is_rated=Exists(MovieRating.objects.filter(movie=OuterRef('pk'), user=user))
+            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(is_rated=True))
+
+        qs = {
+            'objects': objects,
+            'user': user,
+            'films_count': films.count()
+        }
+
+        return qs
+    
+
+class UserActivityView(UserObjectsListViewBase):
+    def get_queryset(self):
+        user = get_object_or_404(TunedUser.objects.distinct('id'), pk=self.kwargs.get('user_pk'))
 
         user_favorite_activity = user.favorite_activity_user_set.select_related('favorite__movie')
         user_review_activity = user.rating_activity_user_set.select_related('rating__movie')
@@ -148,29 +193,6 @@ class UserActivityView(generic.ListView):
         return context
 
 
-class UserObjectsListViewBase(generic.ListView):
-    context_object_name = 'qs'
-    template_name = 'users/user_objects.html'
-
-    def get_queryset(self):
-        user = get_object_or_404(TunedUser, pk=self.kwargs.get('user_pk'), is_staff=False)
-        objects = super().get_queryset().select_related('user', 'movie').filter(user=user)
-        
-        films = Movie.objects.annotate(
-                is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=user)),
-                is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=user)),
-                is_rated=Exists(MovieRating.objects.filter(movie=OuterRef('pk'), user=user))
-            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(is_rated=True))
-
-        qs = {
-            'objects': objects,
-            'user': user,
-            'films_count': films.count()
-        }
-
-        return qs
-
-
 class UserFavoritesView(UserObjectsListViewBase):
     model = FavMovie
 
@@ -196,30 +218,6 @@ class UserReviewsView(UserObjectsListViewBase):
         context = super().get_context_data(**kwargs)
         context['template_base'] = 'users/user_reviews_base.html'
         return context
-    
-
-class UserUpdateView(generic.UpdateView):
-    model = TunedUser
-    form_class = UserUpdateForm
-    template_name = 'users/update.html'
-
-    def get_object(self, queryset=None):
-        user = super().get_queryset().get(pk=self.request.user.pk)
-
-        return user
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Profile has been updated.')
-
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, form.errors)
-
-        return super().form_invalid(form)
-
-    def get_success_url(self):
-        return self.object.get_absolute_url()
 
 
 class UserRegisterView(generic.FormView):
@@ -270,3 +268,36 @@ class UserLoginView(generic.FormView):
 class UserLogoutView(LogoutView):
     next_page = reverse_lazy('home')
 
+
+class CreateCountryListAPIView(APIView):
+    permission_classes = [IsStaffUser]
+
+    def post(self, request):
+        with transaction.atomic():
+            response = requests.get('https://restcountries.com/v3.1/all')
+            response_data = {}
+
+            if response.status_code != 200:
+                return Response(
+                    {'error': response.status_code},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            response = response.json()
+            
+            for lst in response:
+                common_name = lst.get('name').get('common')
+                cca2 = lst.get('cca2')
+                obj, created = Country.objects.get_or_create(
+                        common_name=common_name,
+                        cca2=cca2,
+                    )
+                if created:
+                    response_data.update({cca2: 'created'})
+                else:
+                    response_data.update({cca2: 'exists'})
+
+            return Response(
+                {'success': response_data},
+                status=status.HTTP_200_OK
+            )    

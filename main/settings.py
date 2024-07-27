@@ -174,7 +174,16 @@ DJOSER = {
 
 def show_toolbar(request):
     return True
+
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
 }
+
+DATE_INPUT_FORMATS = [
+    '%Y-%m-%d',
+    '%m/%d/%Y',
+    '%m/%d/%y',
+    '%m/%d/%y',
+    '%d.%m.%y',
+]
 

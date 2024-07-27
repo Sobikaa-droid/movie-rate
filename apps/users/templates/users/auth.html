@@ -8,8 +8,8 @@
     <form method="POST"> {% csrf_token %}
       {% for field in form %}
       <div class="mb-3">
-        <!-- <label class="form-label">{{ field.label_tag }}</label> -->
-        {% render_field field class="form-control" placeholder=field.label %}
+        <label class="form-label text-muted">{{ field.label_tag }}</label>
+        {% render_field field class="form-control" %}
         <div class="form-text">
           {{ field.help_text }}
         </div>

@@ -1,20 +1,29 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.urls import reverse
 
 from apps.movies.models import MovieReview, FavMovie, MovieRating, MovieWatchLater
 
 
+class Country(models.Model):
+    common_name = models.CharField(max_length=150)
+    cca2 = models.CharField(max_length=30)
+
+    class Meta:
+        ordering = ['common_name']
+
+    def __str__(self):
+        return f'{self.common_name} [{self.cca2}]'
+
+
 class TunedUser(AbstractUser):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     second_name = models.CharField(max_length=100, null=True, blank=True)
-    description = models.TextField(max_length=1500, null=True, blank=True)
+    description = models.TextField(max_length=500, null=True, blank=True)
     year_of_birth = models.DateField(null=True, blank=True)
-    country = models.CharField(max_length=70, null=True, blank=True)
+    country = models.OneToOneField(Country, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ['-pk']

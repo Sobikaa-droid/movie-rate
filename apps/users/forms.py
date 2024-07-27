@@ -10,8 +10,7 @@ class UserCreateForm(UserCreationForm):
 
     class Meta:
         model = TunedUser
-        fields = ["username", 'email', 'first_name', 'second_name', 'description', "password1", "password2",
-                  'country', 'year_of_birth']
+        fields = ["username", 'email', "password1", "password2"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,3 +44,9 @@ class UserUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.label_suffix = ""  # Removes ':' as label suffix
+
+        self.fields['username'].help_text = 'Letters, numbers and @/./+/-/_ only.'
+
+        for field_name, field in self.fields.items():
+            if field.required:
+                field.label = f'{field.label}*'

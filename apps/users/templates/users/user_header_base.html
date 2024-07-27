@@ -12,10 +12,19 @@
       <h3 class='fw-bold'>
         {{ user.username }}
         {% if user == request.user %}
-        <a class='link-secondary text-decoration-none' href=''><i class="fa-solid fa-pencil"></i></a>
+        <a class='link-secondary text-decoration-none' href="{% url 'users:update' request.user.pk %}"><i class="fa-solid fa-pencil"></i></a>
         {% endif %}
       </h3>
-      <h6 class="text-secondary">{{ user.first_name }} {{ user.second_name }}</h6>
+      {% if user.first_name or user.second_name %}
+      <h6 class="text-secondary">
+        {% if user.first_name %}
+        {{ user.first_name }}
+        {% endif %}
+        {% if user.second_name %}
+        {{ user.second_name }}
+        {% endif %}
+      </h6>
+      {% endif %}
     </div>
   </div>
   <div class='user-info-part mb-auto mt-auto d-flex'>
@@ -37,12 +46,14 @@
     </div>
   </div>
 </div>
-<div>
+{% if user.description %}
+<div class='mt-4'>
   <span class='text-secondary'>
-  {{ user.description }}
+  «{{ user.description }}»
   </span>
 </div>
-<ul class="nav nav_filter_by nav-underline justify-content-center border border-secondary border-opacity-25 mt-4 mb-4 rounded">
+{% endif %}
+<ul class="nav nav_filter_by nav-underline justify-content-center border border-secondary border-opacity-25 mb-4 mt-4 rounded">
   <li class="nav-item">
     {% url 'users:detail' user.pk as user_url %}
     <a class="nav-link {% if request.path == user_url %} link-dark {% endif %} me-3" aria-current="page" href="{{ user.get_absolute_url }}">

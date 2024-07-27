@@ -1,6 +1,6 @@
 # your_app/serializers.py
 from rest_framework import serializers
-from .models import TunedUser
+from .models import TunedUser, Country
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
