@@ -9,13 +9,7 @@
       <div class="d-flex">
         <h1 class="page_title me-2">
           {{ movie.title }}
-          <a href="javascript:$('#frm_fav_movie').submit();">{% if is_saved %}<i class="fa-solid fa-heart text-danger"></i>{% else %}<i class="fa-regular fa-heart text-secondary"></i>{% endif %}</a>
-          <a href="javascript:$('#frm_wl_movie').submit();">{% if is_wled %}<i class="fa-solid fa-clock text-success"></i>{% else %}<i class="fa-regular fa-clock text-secondary"></i>{% endif %}</a>
         </h1>
-        <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
-        </form>
-        <form action="{% url 'movies:wl_movie' movie.pk %}" method="POST" id="frm_wl_movie"> {% csrf_token %}
-        </form>
       </div>
       <p class="page_description text-secondary lh-base">
         {{ movie.plot|striptags|truncatechars:300 }}
@@ -79,6 +73,22 @@
     </div>
     <div class="flex-shrink-0 page_detail_image_div">
       <img class="page_detail_image" src="{{ movie.poster }}" />
+      <div class='action-buttons mt-3 text-center'>
+        <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
+        </form>
+        <form action="{% url 'movies:wl_movie' movie.pk %}" method="POST" id="frm_wl_movie"> {% csrf_token %}
+        </form>
+        {% if is_saved %}
+        <a href="javascript:$('#frm_fav_movie').submit();" class='btn btn-danger me-2'><i class="fa-solid fa-heart"></i> Favorite</a>
+        {% else %}
+        <a href="javascript:$('#frm_fav_movie').submit();" class='btn btn-outline-danger me-2'><i class="fa-regular fa-heart"></i> Favorite</a>
+        {% endif %}
+        {% if is_wled %}
+        <a href="javascript:$('#frm_wl_movie').submit();" class='btn btn-dark'><i class="fa-solid fa-clock"></i> Watch later</a>
+        {% else %}
+        <a href="javascript:$('#frm_wl_movie').submit();" class='btn btn-outline-dark'><i class="fa-regular fa-clock"></i> Watch later</a>
+        {% endif %}
+      </div>
     </div>
   </div>
   <div class="mb-5">
