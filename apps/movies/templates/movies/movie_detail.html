@@ -74,20 +74,27 @@
     <div class="flex-shrink-0 page_detail_image_div">
       <img class="page_detail_image" src="{{ movie.poster }}" />
       <div class='action-buttons mt-3 text-center'>
-        <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
-        </form>
-        <form action="{% url 'movies:wl_movie' movie.pk %}" method="POST" id="frm_wl_movie"> {% csrf_token %}
-        </form>
-        {% if is_saved %}
-        <a href="javascript:$('#frm_fav_movie').submit();" class='btn btn-danger me-2'><i class="fa-solid fa-heart"></i> Favorite</a>
-        {% else %}
-        <a href="javascript:$('#frm_fav_movie').submit();" class='btn btn-outline-danger me-2'><i class="fa-regular fa-heart"></i> Favorite</a>
-        {% endif %}
-        {% if is_wled %}
-        <a href="javascript:$('#frm_wl_movie').submit();" class='btn btn-dark'><i class="fa-solid fa-clock"></i> Watch later</a>
-        {% else %}
-        <a href="javascript:$('#frm_wl_movie').submit();" class='btn btn-outline-dark'><i class="fa-regular fa-clock"></i> Watch later</a>
-        {% endif %}
+        <div class="dropdown-center">
+          <button class="btn btn-outline-dark btn-lg" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa-regular fa-folder-open"></i> Add to folder
+          </button>
+          <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_fav_movie"> {% csrf_token %}
+          </form>
+          <form action="{% url 'movies:wl_movie' movie.pk %}" method="POST" id="frm_wl_movie"> {% csrf_token %}
+          </form>
+          <ul class="dropdown-menu">
+            {% if is_saved %}
+            <li><a class="dropdown-item" href="javascript:$('#frm_fav_movie').submit();"><i class="fa-solid fa-check text-orange"></i> Favorites</a></li>
+            {% else %}
+            <li><a class="dropdown-item" href="javascript:$('#frm_fav_movie').submit();">Favorites</a></li>
+            {% endif %}
+            {% if is_wled %}
+            <li><a href="javascript:$('#frm_wl_movie').submit();" class='dropdown-item'><i class="fa-solid fa-check text-orange"></i> Watch later</a></li>
+            {% else %}
+            <li><a href="javascript:$('#frm_wl_movie').submit();" class='dropdown-item'>Watch later</a></li>
+            {% endif %}
+          </ul>
+        </div>
       </div>
     </div>
   </div>

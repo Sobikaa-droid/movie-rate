@@ -39,7 +39,7 @@ class UserLoginForm(AuthenticationForm):
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = TunedUser
-        fields = ["username", 'first_name', 'second_name', 'description', 'year_of_birth', 'country']
+        fields = ["username", 'first_name', 'second_name', 'description', 'year_of_birth', 'country', 'image']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

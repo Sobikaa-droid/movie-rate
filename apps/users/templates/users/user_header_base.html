@@ -84,4 +84,10 @@
       <h5>Reviews</h5>
     </a>
   </li>
+  <li class="nav-item">
+    {% url 'users:user_wl' user.pk as user_reviews_url %}
+    <a class="nav-link {% if request.path == user_reviews_url %} link-dark {% endif %} me-3" href="{{ user_reviews_url }}">
+      <h5>Watch Later</h5>
+    </a>
+  </li>
 </ul>

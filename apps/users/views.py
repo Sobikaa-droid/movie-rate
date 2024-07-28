@@ -20,7 +20,7 @@ from .models import TunedUser, Country
 from .serializers import CustomUserSerializer
 from .forms import UserCreateForm, UserUpdateForm, UserLoginForm
 from .permissions import UserPermission
-from apps.movies.models import MovieRating, MovieReview, FavMovie, Movie
+from apps.movies.models import MovieRating, MovieReview, FavMovie, Movie, MovieWatchLater
 from apps.movies.permissions import IsStaffUser
 
 
@@ -199,6 +199,15 @@ class UserFavoritesView(UserObjectsListViewBase):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['template_base'] = 'users/user_favorites_base.html'
+        return context
+    
+
+class UserWatchLaterView(UserObjectsListViewBase):
+    model = MovieWatchLater
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['template_base'] = 'users/user_wl_base.html'
         return context
     
 

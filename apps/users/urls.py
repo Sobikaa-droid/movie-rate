@@ -21,6 +21,7 @@ urlpatterns = [
 
     path('<int:user_pk>/activity/', views.UserActivityView.as_view(), name='user_activity'),
     path('<int:user_pk>/favorites/', views.UserFavoritesView.as_view(), name='user_favorites'),
+    path('<int:user_pk>/watch-later/', views.UserWatchLaterView.as_view(), name='user_wl'),
     path('<int:user_pk>/ratings/', views.UserRatingsView.as_view(), name='user_ratings'),
     path('<int:user_pk>/reviews/', views.UserReviewsView.as_view(), name='user_reviews'),
 

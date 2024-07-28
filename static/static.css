@@ -109,6 +109,15 @@ hr {
   height: auto;
 }
 
+.dropdown-menu {
+  --bs-dropdown-link-active-bg: rgb(224, 224, 224);
+  --bs-dropdown-link-active-color: black;
+}
+
+.dropdown-item {
+  color: black;
+}
+
 /* NAVBAR */
 /* NAVBAR */
 
@@ -144,7 +153,7 @@ hr {
 
 .nav-link::before {
   transition: 300ms;
-  height: 5px;
+  height: 2px;
   content: "";
   position: absolute;
   background-color: black;
@@ -157,12 +166,12 @@ hr {
 }
 
 .nav-link-fade-up:hover::before {
-  bottom: 10px;
+  bottom: 15px;
   opacity: 1;
 }
 
 .nav-link-active::before {
-  bottom: 10px;
+  bottom: 15px;
   opacity: 1;
   content: "";
   background-color: black;
