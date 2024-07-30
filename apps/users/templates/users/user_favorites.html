@@ -1,0 +1,18 @@
+<div class="row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 gy-5 gx-5 text-center mb-5">
+  {% for fav in qs %}
+  <div class="col">
+    <a href="{{ fav.movie.get_absolute_url }}" class="card_image_link text-decoration-none">   
+    <div class='image-container'>
+        <img src="{{ fav.movie.poster }}" class="card_image">
+        <div class="text-overlay-top">
+            <a class="link-danger text-decoration-none" href="{% url 'movies:fav_movie' fav.movie.pk %}"><h3 class="fa-solid fa-heart"></h3></a>
+        </div>
+        <div class="vignette"></div>
+        <div class="text-overlay">
+            <h5>{{ fav.movie.title }} ({{ fav.movie.year }})</h5>
+        </div>
+    </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>

@@ -49,6 +49,14 @@ hr {
   color: #ff5500;
 }
 
+.text-ligray {
+  color: #cccccc;
+}
+
+.bg-success {
+  background-color: #3bb33b !important;
+}
+
 .btn-dark {
   --bs-btn-color: #fff;
   --bs-btn-bg: black;
@@ -206,16 +214,11 @@ hr {
   width: 100%;
   height: 150px;
   background-position: center;
-  opacity: 1;
   background-image: url(movies.jpg);
 }
 
 .banner_image_pages {
   background-image: url(movies.jpg);
-}
-
-.banner_image_about {
-  background-image: url(cinema.gif);
 }
 
 .banner_text {
@@ -249,7 +252,7 @@ hr {
   width: 210px;
   height: 312px;
   overflow: hidden;
-  transition: transform .2s; /* Animation */
+  transition: filter 0.2s ease-in-out; /* Animation */
   margin: 0 auto;
   border-radius: 25px 25px;
 }
@@ -261,7 +264,46 @@ hr {
 }
 
 .card_image:hover {
-  transform: scale(1.1);
+  filter: brightness(0.4);
+}
+
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.text-overlay-top {
+  position: absolute;
+  top: 3%;
+  right: 5%;
+  pointer-events: none;
+}
+
+.text-overlay {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  text-align: center;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  width: 90%;
+}
+
+.vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  pointer-events: none;
+  border-radius: 25px 25px;
 }
 
 .card_image_link .card-img-top{
@@ -437,7 +479,7 @@ hr {
 
   /* if any input is checked, make its following siblings grey */
   .rating__input:checked ~ .rating__label .rating__icon--star {
-    color: #6c757d !important;
+    color: #cccccc !important;
   }
   
   /* make all stars orange on rating group hover */
@@ -447,7 +489,7 @@ hr {
 
   /* make hovered input's following siblings grey on hover */
   .rating__input:hover ~ .rating__label .rating__icon--star {
-    color: #6c757d !important;
+    color: #cccccc !important;
   }
 }
 

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
-from django.db.models import Avg
+from django.db.models import Avg, OuterRef, Q
 from django.views import generic
 from django.contrib import messages
 from django.urls import reverse
@@ -15,7 +15,6 @@ from .models import Movie, FavMovie, MovieReview, MovieRating, MovieWatchLater
 from .permissions import IsStaffUser, IsStaffUserOrReadOnly
 from .serializers import MovieSerializer, MovieCreateSerializer, MovieCreateListSerializer
 from .forms import MovieReviewForm, MovieRatingForm
-
 
 # API API API
 
@@ -188,17 +187,16 @@ class MovieListView(generic.ListView):
     template_name = "movies/movie_list.html"
 
     def get_queryset(self):
-        qs = super().get_queryset().all()
+        qs = super().get_queryset().all().annotate(user_rating=Avg('rating_movie_set__rating'))
 
         filter_val = self.request.GET.get('filter_val', None)
         search_val = self.request.GET.get('search_val', None)
-        order_val = self.request.GET.get('order_by', None)
+        order_val = self.request.GET.get('order_by', '-pk')
         if filter_val:
             qs = qs.filter(type__icontains=filter_val)
         if search_val:
             qs = qs.filter(title__icontains=search_val)
-        if order_val:
-            qs = qs.order_by(order_val)
+        qs = qs.order_by(order_val)
         """ if user.is_authenticated:
             qs = qs.annotate(is_saved=Exists(FavMovie.objects.filter(song=OuterRef('pk'), user=user))) """
 

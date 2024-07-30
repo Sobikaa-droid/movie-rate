@@ -33,8 +33,7 @@
             {% else %}
             <img src="{% static 'default.jpg' %}" width="60" height="60" class="me-3 user_image">
             {% endif %}
-            <h5 class="text-dark me-auto mb-auto mt-auto">{{ user.username }}</h5>
-            <h5 class='mb-auto mt-auto'>song{{ user.song_count|pluralize }}</h5>
+            <h5 class="text-muted me-auto mb-auto mt-auto">{{ user.username }}</h5>
           </div>
         </a>
         {% empty %}

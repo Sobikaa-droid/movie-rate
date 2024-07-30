@@ -112,7 +112,7 @@
             <div id="full-stars-example-two">
               <div class="rating-group">
                 {% for i in '0123456789'|make_list %}
-                <label aria-label="{{ forloop.counter }} star" class="rating__label rating__label__submit" for="rating3-{{ forloop.counter }}"><i class="rating__icon rating__icon--star fa fa-star {% if forloop.counter <= avg_site_rating|floatformat:"0"|add:"0" %} text-orange {% else %} text-secondary {% endif %}"></i></label>
+                <label aria-label="{{ forloop.counter }} star" class="rating__label rating__label__submit" for="rating3-{{ forloop.counter }}"><i class="rating__icon rating__icon--star fa fa-star {% if forloop.counter <= avg_site_rating|floatformat:"0"|add:"0" %} text-orange {% else %} text-ligray {% endif %}"></i></label>
                 <input class="rating__input" name="rating" id="rating3-{{ forloop.counter }}" value="{{ forloop.counter }}" type="submit">
                 {% endfor %}
               </div>
@@ -120,7 +120,7 @@
           </form>
         </div>
         <div class='rating'>
-          <h1 class="rating_text text-center {% if avg_site_rating < 5 %} text-danger {% elif avg_site_rating < 7 %} text-warning {% elif avg_site_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
+          <h1 class="rating_text text-center {% if avg_site_rating < 5 %} text-danger {% elif avg_site_rating < 7 %} text-secondary {% elif avg_site_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
             {% if avg_site_rating %}{{ avg_site_rating|floatformat:"1" }}{% else %}0{% endif %}
           </h1>
           <div class='text-center'>
@@ -136,7 +136,7 @@
         <span class='text-muted'>
         IMDb:
         </span>
-        <span class="{% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-warning {% elif imdb_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
+        <span class="{% if imdb_rating < 5 %} text-danger {% elif imdb_rating < 7 %} text-secondary {% elif imdb_rating <= 10 %} text-success {% else %} text-dark {% endif %}">
         {{ imdb_rating }}
         </span>
         <small class='text-secondary ms-2'>
@@ -148,7 +148,7 @@
         <span class='text-muted'>
         My rating:
         </span>
-        <span class="{% if my_rating.rating < 5 %} text-danger {% elif my_rating.rating < 7 %} text-warning {% elif my_rating.rating <= 10 %} text-success {% else %} text-dark {% endif %}">
+        <span class="{% if my_rating.rating < 5 %} text-danger {% elif my_rating.rating < 7 %} text-secondary {% elif my_rating.rating <= 10 %} text-success {% else %} text-dark {% endif %}">
         {{ my_rating.rating }}
         </span>
         <a href="javascript:$('#frm_delete_rating').submit();" class="link link-secondary ms-2"><small>Delete</small></a>

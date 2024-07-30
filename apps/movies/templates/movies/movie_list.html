@@ -14,7 +14,7 @@
             </button>
             <ul class="dropdown-menu">
                 <li><a href="{% url 'movies:list' %}?order_by=title" class="dropdown-item">Title</a></li>
-                <li><a href="{% url 'movies:list' %}?order_by=-rating" class="dropdown-item">Rating</a></li>
+                <li><a href="{% url 'movies:list' %}?order_by=year" class="dropdown-item">Year</a></li>
             </ul>
         </div>
         <ul class="nav nav_filter_by nav-underline justify-content-center ms-5 me-auto">
@@ -45,8 +45,19 @@
     <div class="row row-cols-xxl-5 row-cols-xl-4 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 gy-5 gx-5 text-center mb-5">
         {% for movie in movies %}
         <div class="col">
-            <a href="{{ movie.get_absolute_url }}" class="card_image_link text-decoration-none">   
-            <img src="{{ movie.poster }}" class="card_image">
+            <a href="{{ movie.get_absolute_url }}" class="card_image_link text-decoration-none">
+                <div class='image-container'>
+                    <img src="{{ movie.poster }}" class="card_image">
+                    <div class="text-overlay-top">
+                        {% if movie.user_rating %}
+                        <span class="badge {% if movie.user_rating < 5 %} bg-danger {% elif movie.user_rating < 7 %} bg-secondary {% elif movie.user_rating <= 10 %} bg-success {% else %} bg-dark {% endif %}">{{ movie.user_rating }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="vignette"></div>
+                    <div class="text-overlay">
+                        <h5>{{ movie.title }} ({{ movie.year }})</h5>
+                    </div>
+                </div>
             </a>
         </div>
         {% endfor %}

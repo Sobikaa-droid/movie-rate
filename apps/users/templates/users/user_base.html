@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}{{ user.username }}{% endblock %}
+{% block content %}
+{% load widget_tweaks %}
+{% load static %}
+<div class="container mt-5 mb-5" data-bs-theme="light">
+  <div class="user_detail">
+    <div class="d-flex flex-wrap justify-content-center">
+      <div class='user_detail_info ms-5 w-75 mt-5 me-5'>
+        <div class='user-header'>
+          {% include 'users/user_header.html' %}
+        </div>
+        <div class='user-base mt-5 mb-5'>
+          {% include template %}
+        </div>
+        {% include 'pagination.html' %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

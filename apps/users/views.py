@@ -5,8 +5,8 @@ from django.db import transaction
 from django.db.models import Exists, OuterRef, Prefetch, Q, Avg
 from django.db.models.base import Model as Model
 from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator
 from django.urls import reverse_lazy
-from django.utils.text import slugify
 from django.views import generic
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 from itertools import chain
 import requests
 
-from .models import TunedUser, Country
+from .models import TunedUser, Country, UserFavoriteActivity, UserRatingActivity, UserReviewActivity, UserWatchLaterActivity
 from .serializers import CustomUserSerializer
 from .forms import UserCreateForm, UserUpdateForm, UserLoginForm
 from .permissions import UserPermission
@@ -63,7 +63,7 @@ class UserListView(generic.ListView):
 class UserDetailView(generic.DetailView):
     model = TunedUser
     context_object_name = 'user'
-    template_name = 'users/user_detail.html'
+    template_name = 'users/user_base.html'
 
     def get_queryset(self):
         prefetch_favs = Prefetch(
@@ -109,13 +109,14 @@ class UserDetailView(generic.DetailView):
                   user_rating_activity, 
                   user_wl_activity), 
             key=lambda x: x.created_at, reverse=True)[:5]
+        context['template'] = 'users/user_profile.html'
 
         return context
     
 
 class UserUpdateView(generic.UpdateView):
     form_class = UserUpdateForm
-    template_name = 'users/user_update.html'
+    template_name = 'users/update.html'
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -136,35 +137,40 @@ class UserUpdateView(generic.UpdateView):
 
 class UserObjectsListViewBase(generic.ListView):
     context_object_name = 'qs'
-    template_name = 'users/user_objects.html'
+    template_name = 'users/user_base.html'
+    paginate_by = 15
 
     def get_queryset(self):
+        qs = super().get_queryset().select_related('user', 'movie').filter(user__pk=self.kwargs.get('user_pk'))
+        return qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         user = get_object_or_404(TunedUser.objects.distinct('id'), pk=self.kwargs.get('user_pk'))
-        objects = super().get_queryset().select_related('user', 'movie').filter(user=user)
-        
         films = Movie.objects.annotate(
                 is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=user)),
                 is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=user)),
                 is_rated=Exists(MovieRating.objects.filter(movie=OuterRef('pk'), user=user))
             ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(is_rated=True))
+        
+        context['user'] = user
+        context['films_count'] = films.count()
 
-        qs = {
-            'objects': objects,
-            'user': user,
-            'films_count': films.count()
-        }
-
-        return qs
+        return context
     
 
 class UserActivityView(UserObjectsListViewBase):
     def get_queryset(self):
-        user = get_object_or_404(TunedUser.objects.distinct('id'), pk=self.kwargs.get('user_pk'))
+        user_pk = self.kwargs.get('user_pk')
 
-        user_favorite_activity = user.favorite_activity_user_set.select_related('favorite__movie')
-        user_review_activity = user.rating_activity_user_set.select_related('rating__movie')
-        user_rating_activity = user.review_activity_user_set.select_related('review__movie')
-        user_wl_activity = user.wl_activity_user_set.select_related('wl__movie')
+        user_favorite_activity = UserFavoriteActivity.objects.filter(
+            user__pk=user_pk).select_related('favorite__movie')
+        user_review_activity = UserRatingActivity.objects.filter(
+            user__pk=user_pk).select_related('rating__movie')
+        user_rating_activity = UserReviewActivity.objects.filter(
+            user__pk=user_pk).select_related('review__movie')
+        user_wl_activity = UserWatchLaterActivity.objects.filter(
+            user__pk=user_pk).select_related('wl__movie')
 
         activity_objects = sorted(
             chain(user_favorite_activity, 
@@ -172,24 +178,12 @@ class UserActivityView(UserObjectsListViewBase):
                   user_rating_activity, 
                   user_wl_activity), 
             key=lambda x: x.created_at, reverse=True)
-        
-        films = Movie.objects.annotate(
-                is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=user)),
-                is_reviewed=Exists(MovieReview.objects.filter(movie=OuterRef('pk'), user=user)),
-                is_rated=Exists(MovieRating.objects.filter(movie=OuterRef('pk'), user=user))
-            ).filter(Q(is_saved=True) | Q(is_reviewed=True) | Q(is_rated=True))
 
-        qs = {
-            'objects': activity_objects,
-            'user': user,
-            'films_count': films.count()
-        }
-
-        return qs
+        return activity_objects
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['template_base'] = 'users/user_activity_base.html'
+        context['template'] = 'users/user_activity.html'
         return context
 
 
@@ -198,7 +192,7 @@ class UserFavoritesView(UserObjectsListViewBase):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['template_base'] = 'users/user_favorites_base.html'
+        context['template'] = 'users/user_favorites.html'
         return context
     
 
@@ -207,7 +201,7 @@ class UserWatchLaterView(UserObjectsListViewBase):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['template_base'] = 'users/user_wl_base.html'
+        context['template'] = 'users/user_wls.html'
         return context
     
 
@@ -216,7 +210,7 @@ class UserRatingsView(UserObjectsListViewBase):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['template_base'] = 'users/user_ratings_base.html'
+        context['template'] = 'users/user_ratings.html'
         return context
 
 
@@ -225,7 +219,7 @@ class UserReviewsView(UserObjectsListViewBase):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['template_base'] = 'users/user_reviews_base.html'
+        context['template'] = 'users/user_reviews.html'
         return context
 
 
