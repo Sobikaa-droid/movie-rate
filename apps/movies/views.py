@@ -191,16 +191,34 @@ class MovieListView(generic.ListView):
 
         filter_val = self.request.GET.get('filter_val', None)
         search_val = self.request.GET.get('search_val', None)
+        genre_val = self.request.GET.get('genre_val', None)
         order_val = self.request.GET.get('order_by', '-pk')
         if filter_val:
             qs = qs.filter(type__icontains=filter_val)
         if search_val:
             qs = qs.filter(title__icontains=search_val)
+        if genre_val:
+            qs = qs.filter(genre__icontains=genre_val)
         qs = qs.order_by(order_val)
         """ if user.is_authenticated:
             qs = qs.annotate(is_saved=Exists(FavMovie.objects.filter(song=OuterRef('pk'), user=user))) """
 
         return qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        movie_genres = [
+            "Action", "Adventure", "Comedy", "Drama", "Horror", "Romance", "Science Fiction", "Animation", "Documentary", "Fantasy",
+            "Crime", "Thriller", "Family", "War", "Musical", "Western", "Sports", "Mystery", "History", "Biography", "Film Noir",
+            "Disaster", "Superhero", "Adult", "Experimental", "Road Movie", "Psychological", "Martial Arts", "Anthology",
+            "Erotic", "Mockumentary", "Neo-Noir", "Supernatural", "Political", "Religious", "Slasher", "Surreal",
+            "Dystopian", "Period"
+        ]
+        
+        context['genres'] = movie_genres
+
+        return context
 
 
 class MovieDetailView(generic.DetailView):

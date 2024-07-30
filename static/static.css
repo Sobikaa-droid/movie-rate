@@ -232,6 +232,11 @@ hr {
   text-transform: uppercase;
 }
 
+.dropdown-menu {
+  max-height: 300px; /* Set the maximum height */
+  overflow: auto;
+}
+
 /* ROW */
 
 .col img {
