@@ -19,7 +19,7 @@
         </div>
         <div class="dropdown ms-3">
             <button class="btn btn-lg btn-outline-white" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fa-solid fa-layer-group"></i> Genre
+                <i class="fa-solid fa-layer-group {% if request.GET.genre_val %} text-orange {% endif %}"></i> Genre
             </button>
             <ul class="dropdown-menu">
                 {% for genre in genres %}
@@ -58,9 +58,16 @@
             <a href="{{ movie.get_absolute_url }}" class="card_image_link text-decoration-none">
                 <div class='image-container'>
                     <img src="{{ movie.poster }}" class="card_image">
-                    <div class="text-overlay-top">
+                    <div class='text-overlay-top-right'>
                         {% if movie.user_rating %}
                         <span class="badge {% if movie.user_rating < 5 %} bg-danger {% elif movie.user_rating < 7 %} bg-secondary {% elif movie.user_rating <= 10 %} bg-success {% else %} bg-dark {% endif %}">{{ movie.user_rating }}</span>
+                        {% endif %}
+                    </div>
+                    <div class='text-overlay-top-left'>
+                        {% if movie.is_saved %}
+                        <form action="{% url 'movies:fav_movie' movie.pk %}" method="POST" id="frm_like{{ movie.pk }}"> {% csrf_token %}
+                        </form>
+                        <a class="link-danger text-decoration-none" href="javascript:$('#frm_like{{ movie.pk }}').submit();"><h3 class="fa-solid fa-heart"></h3></a>   
                         {% endif %}
                     </div>
                     <div class="vignette"></div>

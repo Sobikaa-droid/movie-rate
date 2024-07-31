@@ -2,7 +2,20 @@
     {% for obj in qs %}
     <div class="col">
       <a href="{{ obj.movie.get_absolute_url }}" class="card_image_link text-decoration-none">   
-      <img src="{{ obj.movie.poster }}" class="card_image">
+      <div class='image-container'>
+          <img src="{{ obj.movie.poster }}" class="card_image">
+          <div class="text-overlay-top">
+            <div class='text-overlay-top-left'>
+              <form action="{% url 'movies:wl_movie' obj.movie.pk %}" method="POST" id="frm_wl{{ obj.movie.pk }}"> {% csrf_token %}
+              </form>
+              <a class="link-secondary text-decoration-none" href="javascript:$('#frm_wl{{ obj.movie.pk }}').submit();"><h3 class="fa-regular fa-clock"></h3></a>           
+            </div>
+          </div>
+          <div class="vignette"></div>
+          <div class="text-overlay">
+              <h5>{{ obj.movie.title }} ({{ obj.movie.year }})</h5>
+          </div>
+      </div>
       </a>
     </div>
     {% endfor %}

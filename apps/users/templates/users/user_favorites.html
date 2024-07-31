@@ -5,7 +5,11 @@
     <div class='image-container'>
         <img src="{{ fav.movie.poster }}" class="card_image">
         <div class="text-overlay-top">
-            <a class="link-danger text-decoration-none" href="{% url 'movies:fav_movie' fav.movie.pk %}"><h3 class="fa-solid fa-heart"></h3></a>
+          <div class='text-overlay-top-left'>
+            <form action="{% url 'movies:fav_movie' fav.movie.pk %}" method="POST" id="frm_like{{ fav.movie.pk }}"> {% csrf_token %}
+            </form>
+            <a class="link-danger text-decoration-none" href="javascript:$('#frm_like{{ fav.movie.pk }}').submit();"><h3 class="fa-solid fa-heart"></h3></a>           
+          </div>
         </div>
         <div class="vignette"></div>
         <div class="text-overlay">

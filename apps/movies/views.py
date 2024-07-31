@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
-from django.db.models import Avg, OuterRef, Q
+from django.db.models import Avg, OuterRef, Q, Exists
 from django.views import generic
 from django.contrib import messages
 from django.urls import reverse
@@ -200,8 +200,8 @@ class MovieListView(generic.ListView):
         if genre_val:
             qs = qs.filter(genre__icontains=genre_val)
         qs = qs.order_by(order_val)
-        """ if user.is_authenticated:
-            qs = qs.annotate(is_saved=Exists(FavMovie.objects.filter(song=OuterRef('pk'), user=user))) """
+        if self.request.user.is_authenticated:
+            qs = qs.annotate(is_saved=Exists(FavMovie.objects.filter(movie=OuterRef('pk'), user=self.request.user)))
 
         return qs
     
@@ -209,10 +209,10 @@ class MovieListView(generic.ListView):
         context = super().get_context_data(**kwargs)
 
         movie_genres = [
-            "Action", "Adventure", "Comedy", "Drama", "Horror", "Romance", "Science Fiction", "Animation", "Documentary", "Fantasy",
+            "Action", "Adventure", "Comedy", "Drama", "Horror", "Romance", "Science Fiction", "Animation", "Documentary",
             "Crime", "Thriller", "Family", "War", "Musical", "Western", "Sports", "Mystery", "History", "Biography", "Film Noir",
             "Disaster", "Superhero", "Adult", "Experimental", "Road Movie", "Psychological", "Martial Arts", "Anthology",
-            "Erotic", "Mockumentary", "Neo-Noir", "Supernatural", "Political", "Religious", "Slasher", "Surreal",
+            "Erotic", "Mockumentary", "Neo-Noir", "Supernatural", "Political", "Religious", "Slasher", "Surreal", "Fantasy",
             "Dystopian", "Period"
         ]
         
