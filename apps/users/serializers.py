@@ -18,13 +18,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # Update racer instances with the validated data
-        instance.username = validated_data.get('username', instance.username)
+        """ instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.second_name = validated_data.get('second_name', instance.second_name)
         instance.description = validated_data.get('description', instance.description)
         instance.year_of_birth = validated_data.get('year_of_birth', instance.year_of_birth)
-        instance.country = validated_data.get('country', instance.year_of_birth)
+        instance.country = validated_data.get('country', instance.year_of_birth) """
 
         # Check if password is provided and update it if necessary
         password = validated_data.get('password')

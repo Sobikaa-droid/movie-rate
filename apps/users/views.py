@@ -19,9 +19,8 @@ import requests
 from .models import TunedUser, Country, UserFavoriteActivity, UserRatingActivity, UserReviewActivity, UserWatchLaterActivity
 from .serializers import CustomUserSerializer
 from .forms import UserCreateForm, UserUpdateForm, UserLoginForm
-from .permissions import UserPermission
+from . import custom_permissions
 from apps.movies.models import MovieRating, MovieReview, FavMovie, Movie, MovieWatchLater
-from apps.movies.permissions import IsStaffUser
 
 
 # pagination class
@@ -34,7 +33,7 @@ class ListPagination(PageNumberPagination):
 class UserAPIViewSet(viewsets.ModelViewSet):
     queryset = TunedUser.objects.order_by('-pk')
     serializer_class = CustomUserSerializer
-    permission_classes = [UserPermission]
+    permission_classes = [custom_permissions.IsAuthenticatedAndUserOrReadOnly]
     pagination_class = ListPagination
 
 
@@ -273,7 +272,7 @@ class UserLogoutView(LogoutView):
 
 
 class CreateCountryListAPIView(APIView):
-    permission_classes = [IsStaffUser]
+    permission_classes = [custom_permissions.IsStaffUser]
 
     def post(self, request):
         with transaction.atomic():

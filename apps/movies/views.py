@@ -8,13 +8,14 @@ from django.utils.text import slugify
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.pagination import PageNumberPagination
 import requests
 
 from .models import Movie, FavMovie, MovieReview, MovieRating, MovieWatchLater
-from .permissions import IsStaffUser, IsStaffUserOrReadOnly
-from .serializers import MovieSerializer, MovieCreateSerializer, MovieCreateListSerializer
+from . import serializers
 from .forms import MovieReviewForm, MovieRatingForm
+from apps.users import custom_permissions
 
 # API API API
 
@@ -24,24 +25,67 @@ class ListPagination(PageNumberPagination):
     max_page_size = 10
 
 
+# Movie
 class MovieAPIListView(generics.ListAPIView):
     queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
+    serializer_class = serializers.MovieSerializer
     pagination_class = ListPagination
 
 
 class MovieAPIRetrieveDestroyView(generics.RetrieveDestroyAPIView):
     queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
-    permission_classes = [IsStaffUserOrReadOnly]
+    serializer_class = serializers.MovieSerializer
+    permission_classes = [custom_permissions.IsStaffUserOrReadOnly]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        object = self.get_object()
+
+        response = requests.get(f'https://www.omdbapi.com/?t={slugify(object.title)}&year={slugify(object.year)}&apikey=9a6fa81f')
+        yt_params = {
+            'q': f'{object.title} {object.year} trailer',
+            'type': 'video',
+            'part': 'id,snippet',
+            'maxResults': 1,
+            'key': 'AIzaSyC1f3pjIV3DIGIglOvOIq0eMjv-8RchM_k',
+        }
+        yt_response = requests.get('https://www.googleapis.com/youtube/v3/search', params=yt_params)
+        reviews = MovieReview.objects.filter(movie=object)
+        ratings = MovieRating.objects.filter(movie=object)
+        
+        avg_site_rating = ratings.aggregate(Avg('rating')).get('rating__avg')
+        ratings_count = ratings.count()
+        reviews_count = reviews.count()
+        if response.status_code == 200:
+            imdb_votes = response.json().get('imdbVotes', 'N/A')
+            imdb_rating = float(response.json().get('imdbRating', '0')) if response.json().get('imdbRating') != 'N/A' else 'N/A'
+        else:
+            imdb_votes = 'N/A'
+            imdb_rating = 'N/A'
+        if yt_response.status_code == 200:
+            video_id = yt_response.json().get('items')[0].get('id').get('videoId')
+            trailer = f'https://www.youtube.com/watch?v={video_id}'
+        else:
+            trailer = 'N/A'
+
+        context['additional_info'] = {
+            'avg_site_rating': avg_site_rating,
+            'ratings_count': ratings_count,
+            'reviews_count': reviews_count,
+            'imdb_votes': imdb_votes,
+            'imdb_rating': imdb_rating,
+            'trailer': trailer,
+        }
+
+        return context
 
 
 class CreateMovieAPIView(APIView):
-    permission_classes = [IsStaffUser]
+    permission_classes = [custom_permissions.IsStaffUser]
 
     def post(self, request):
         with transaction.atomic():
-            serializer = MovieCreateSerializer(data=request.data)
+            serializer = serializers.MovieCreateSerializer(data=request.data)
             if serializer.is_valid():
                 title = serializer.validated_data.get('title').lower()
                 year = serializer.validated_data.get('year', None)
@@ -89,11 +133,11 @@ class CreateMovieAPIView(APIView):
 
 
 class CreateMovieListAPIView(APIView):
-    permission_classes = [IsStaffUser]
+    permission_classes = [custom_permissions.IsStaffUser]
 
     def post(self, request):
         with transaction.atomic():
-            serializer = MovieCreateListSerializer(data=request.data)
+            serializer = serializers.MovieCreateListSerializer(data=request.data)
             if serializer.is_valid():
                 response_data = {}
                 movies_list = [
@@ -143,7 +187,7 @@ class CreateMovieListAPIView(APIView):
 
 
 class UpdateMovieListAPIView(APIView):
-    permission_classes = [IsStaffUser]
+    permission_classes = [custom_permissions.IsStaffUser]
 
     def post(self, request):
         with transaction.atomic():
@@ -178,7 +222,77 @@ class UpdateMovieListAPIView(APIView):
                 status=status.HTTP_200_OK
             )
 
-# GENERIC GENERIC GENERIC
+
+class APIListCreateBase(generics.ListCreateAPIView):
+    pagination_class = ListPagination
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(movie__pk=self.kwargs.get('movie_pk'))
+        self.check_permissions(self.request)
+
+        return qs
+    
+    def create(self, request, *args, **kwargs):
+        if self.get_queryset().exists():
+            return Response({'error': 'Object already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        movie = get_object_or_404(Movie, pk=self.kwargs.get('movie_pk'))
+        serializer.save(user=self.request.user, movie=movie)
+
+
+# Rating
+class MovieRatingAPIListCreateView(APIListCreateBase):
+    queryset = MovieRating.objects.all()
+    serializer_class = serializers.RatingModelSerializer
+
+
+class MovieRatingAPIRetrieveDestroyView(generics.RetrieveDestroyAPIView):
+    queryset = MovieRating.objects.all()
+    serializer_class = serializers.RatingModelSerializer
+    permission_classes = [custom_permissions.IsAuthenticatedAndOwnerOrReadOnly]
+
+
+# Favorite
+class MovieFavoriteAPIListCreateView(APIListCreateBase):
+    queryset = FavMovie.objects.all()
+    serializer_class = serializers.FavoriteModelSerializer
+
+
+class MovieFavoriteAPIDestroyView(generics.DestroyAPIView):
+    queryset = FavMovie.objects.all()
+    serializer_class = serializers.FavoriteModelSerializer
+    permission_classes = [custom_permissions.IsAuthenticatedAndOwnerOrReadOnly]
+
+
+# Review
+class MovieReviewAPIListCreateView(APIListCreateBase):
+    queryset = MovieReview.objects.all()
+    serializer_class = serializers.ReviewModelSerializer
+
+
+class MovieReviewAPIRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = MovieReview.objects.all()
+    serializer_class = serializers.ReviewModelSerializer
+    permission_classes = [custom_permissions.IsAuthenticatedAndOwnerOrReadOnly]
+
+
+# Watch Later
+class MovieWatchLaterAPIListCreateView(APIListCreateBase):
+    queryset = MovieWatchLater.objects.all()
+    serializer_class = serializers.WatchLaterModelSerializer
+
+
+class MovieWatchLaterAPIDestroyView(generics.DestroyAPIView):
+    queryset = MovieWatchLater.objects.all()
+    serializer_class = serializers.WatchLaterModelSerializer
+    permission_classes = [custom_permissions.IsAuthenticatedAndOwnerOrReadOnly]
+
+
+# GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC GENERIC
 
 class MovieListView(generic.ListView):
     model = Movie
@@ -228,6 +342,7 @@ class MovieDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f')
         yt_params = {
             'q': f'{self.object.title} {self.object.year} trailer',
@@ -237,7 +352,6 @@ class MovieDetailView(generic.DetailView):
             'key': 'AIzaSyC1f3pjIV3DIGIglOvOIq0eMjv-8RchM_k',
         }
         yt_response = requests.get('https://www.googleapis.com/youtube/v3/search', params=yt_params)
-        user = self.request.user
         reviews = MovieReview.objects.filter(movie=self.object)
         ratings = MovieRating.objects.filter(movie=self.object)
         
@@ -256,7 +370,7 @@ class MovieDetailView(generic.DetailView):
         else:
             context['trailer'] = f'https://www.youtube.com/embed/rK42auRaDDk'
 
-            
+        user = self.request.user
         if user.is_authenticated:
             context['is_saved'] = self.object.fav_movie_set.filter(user=user).exists()
             context['is_wled'] = self.object.wl_movie_set.filter(user=user).exists()

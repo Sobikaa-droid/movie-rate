@@ -1,12 +1,19 @@
 from rest_framework import serializers
 
-from .models import Movie
+from .models import Movie, MovieRating, MovieReview, FavMovie, MovieWatchLater
 
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = '__all__'
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        additional_info = self.context.get('additional_info', {})
+        representation.update(additional_info)
+
+        return representation
 
 
 class MovieCreateSerializer(serializers.Serializer):
@@ -24,3 +31,43 @@ class MovieCreateListSerializer(serializers.Serializer):
             'max_value': 'The limit must not exceed %(limit_value)s.'
         }
     )
+
+
+class RatingModelSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    movie = MovieSerializer(read_only=True)
+
+    class Meta:
+        model = MovieRating
+        fields = '__all__'
+        read_only_fields = ['creation_date']
+
+
+class FavoriteModelSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    movie = MovieSerializer(read_only=True)
+
+    class Meta:
+        model = FavMovie
+        fields = '__all__'
+        read_only_fields = ['creation_date']
+
+
+class ReviewModelSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    movie = MovieSerializer(read_only=True)
+
+    class Meta:
+        model = MovieReview
+        fields = '__all__'
+        read_only_fields = ['creation_date']
+
+
+class WatchLaterModelSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    movie = MovieSerializer(read_only=True)
+
+    class Meta:
+        model = MovieWatchLater
+        fields = '__all__'
+        read_only_fields = ['creation_date']
