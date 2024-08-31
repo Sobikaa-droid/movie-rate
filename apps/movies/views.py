@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404, redirect
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Avg, OuterRef, Q, Exists
 from django.views import generic
@@ -41,40 +42,47 @@ class MovieAPIRetrieveDestroyView(generics.RetrieveDestroyAPIView):
         context = super().get_serializer_context()
         object = self.get_object()
 
-        response = requests.get(f'https://www.omdbapi.com/?t={slugify(object.title)}&year={slugify(object.year)}&apikey=9a6fa81f')
-        yt_params = {
-            'q': f'{object.title} {object.year} trailer',
-            'type': 'video',
-            'part': 'id,snippet',
-            'maxResults': 1,
-            'key': 'AIzaSyC1f3pjIV3DIGIglOvOIq0eMjv-8RchM_k',
-        }
-        yt_response = requests.get('https://www.googleapis.com/youtube/v3/search', params=yt_params)
+        cached_data = cache.get(f'cached_data{object.pk}')
+        if not cached_data:
+            cached_data = {
+                'imdb_votes': 'N/A',
+                'imdb_rating': 'N/A',
+                'trailer': 'https://www.youtube.com/embed/rK42auRaDDk',
+            }
+
+            response = requests.get(f'https://www.omdbapi.com/?t={slugify(object.title)}&year={slugify(object.year)}&apikey=9a6fa81f')
+            if response.status_code == 200:
+                cached_data['imdb_votes'] = response.json().get('imdbVotes', 'N/A')
+                cached_data['imdb_rating'] = float(response.json().get('imdbRating', '0')) if response.json().get('imdbRating') != 'N/A' else float(0)
+            
+            yt_params = {
+                'q': f'{object.title} {object.year} trailer',
+                'type': 'video',
+                'part': 'id,snippet',
+                'maxResults': 1,
+                'key': 'AIzaSyC1f3pjIV3DIGIglOvOIq0eMjv-8RchM_k',
+            }
+            yt_response = requests.get('https://www.googleapis.com/youtube/v3/search', params=yt_params)
+            if yt_response.status_code == 200:
+                video_id = yt_response.json().get('items')[0].get('id').get('videoId')
+                cached_data['trailer'] = f'https://www.youtube.com/embed/{video_id}'
+
+            cache.set(f'cached_data{object.pk}', cached_data, 60)
+
         reviews = MovieReview.objects.filter(movie=object)
         ratings = MovieRating.objects.filter(movie=object)
         
         avg_site_rating = ratings.aggregate(Avg('rating')).get('rating__avg')
         ratings_count = ratings.count()
         reviews_count = reviews.count()
-        if response.status_code == 200:
-            imdb_votes = response.json().get('imdbVotes', 'N/A')
-            imdb_rating = float(response.json().get('imdbRating', '0')) if response.json().get('imdbRating') != 'N/A' else 'N/A'
-        else:
-            imdb_votes = 'N/A'
-            imdb_rating = 'N/A'
-        if yt_response.status_code == 200:
-            video_id = yt_response.json().get('items')[0].get('id').get('videoId')
-            trailer = f'https://www.youtube.com/watch?v={video_id}'
-        else:
-            trailer = 'N/A'
 
         context['additional_info'] = {
             'avg_site_rating': avg_site_rating,
             'ratings_count': ratings_count,
             'reviews_count': reviews_count,
-            'imdb_votes': imdb_votes,
-            'imdb_rating': imdb_rating,
-            'trailer': trailer,
+            'imdb_votes': cached_data.get('imdb_votes'),
+            'imdb_rating': cached_data.get('imdb_rating'),
+            'trailer': cached_data.get('trailer'),
         }
 
         return context
@@ -342,16 +350,34 @@ class MovieDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        cached_data = cache.get(f'cached_data{self.object.pk}')
+        if not cached_data:
+            cached_data = {
+                'imdb_votes': 'N/A',
+                'imdb_rating': 'N/A',
+                'trailer': 'https://www.youtube.com/embed/rK42auRaDDk',
+            }
 
-        response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f')
-        yt_params = {
-            'q': f'{self.object.title} {self.object.year} trailer',
-            'type': 'video',
-            'part': 'id,snippet',
-            'maxResults': 1,
-            'key': 'AIzaSyC1f3pjIV3DIGIglOvOIq0eMjv-8RchM_k',
-        }
-        yt_response = requests.get('https://www.googleapis.com/youtube/v3/search', params=yt_params)
+            response = requests.get(f'https://www.omdbapi.com/?t={slugify(self.object.title)}&year={slugify(self.object.year)}&apikey=9a6fa81f')
+            if response.status_code == 200:
+                cached_data['imdb_votes'] = response.json().get('imdbVotes', 'N/A')
+                cached_data['imdb_rating'] = float(response.json().get('imdbRating', '0')) if response.json().get('imdbRating') != 'N/A' else float(0)
+            
+            yt_params = {
+                'q': f'{self.object.title} {self.object.year} trailer',
+                'type': 'video',
+                'part': 'id,snippet',
+                'maxResults': 1,
+                'key': 'AIzaSyC1f3pjIV3DIGIglOvOIq0eMjv-8RchM_k',
+            }
+            yt_response = requests.get('https://www.googleapis.com/youtube/v3/search', params=yt_params)
+            if yt_response.status_code == 200:
+                video_id = yt_response.json().get('items')[0].get('id').get('videoId')
+                cached_data['trailer'] = f'https://www.youtube.com/embed/{video_id}'
+
+            cache.set(f'cached_data{self.object.pk}', cached_data, 60)
+
         reviews = MovieReview.objects.filter(movie=self.object)
         ratings = MovieRating.objects.filter(movie=self.object)
         
@@ -361,14 +387,9 @@ class MovieDetailView(generic.DetailView):
         context['reviews_count'] = reviews.count()
         context['reviews_gte'] = reviews.select_related('user', 'movie').order_by('?')[:4]
         context['review_form'] = MovieReviewForm()
-        if response.status_code == 200:
-            context['imdb_votes'] = response.json().get('imdbVotes', 'N/A')
-            context['imdb_rating'] = float(response.json().get('imdbRating', '0')) if response.json().get('imdbRating') != 'N/A' else float(0)
-        if yt_response.status_code == 200:
-            video_id = yt_response.json().get('items')[0].get('id').get('videoId')
-            context['trailer'] = f'https://www.youtube.com/embed/{video_id}'
-        else:
-            context['trailer'] = f'https://www.youtube.com/embed/rK42auRaDDk'
+        context['imdb_votes'] = cached_data.get('imdb_votes')
+        context['imdb_rating'] = cached_data.get('imdb_rating')
+        context['trailer'] = cached_data.get('trailer')
 
         user = self.request.user
         if user.is_authenticated:

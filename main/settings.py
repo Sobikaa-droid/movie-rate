@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,14 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@7*&^l7bn52on*8kv1h*xx=x)90q6r(h*bq#&d)sizih&!0*4g'
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DEBUG = os.environ.get("DEBUG")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(',')
 
-# Debug config
-DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 # End Debug config
-
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 INTERNAL_IPS = ('127.0.0.1', 'localhost')
 
@@ -173,7 +172,7 @@ DJOSER = {
 }
 
 def show_toolbar(request):
-    return True
+    return DEBUG
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
@@ -187,3 +186,9 @@ DATE_INPUT_FORMATS = [
     '%d.%m.%y',
 ]
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://redis:6379/0",
+    }
+}

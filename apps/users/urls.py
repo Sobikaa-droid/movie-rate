@@ -12,8 +12,8 @@ router.register(r'users', views.UserAPIViewSet, basename="users")
 urlpatterns = [
     # api
     path('api/', include(router.urls)),
-
-    path('create-countries/', views.CreateCountryListAPIView.as_view(), name='create_countries'),
+    path('api/<int:user_pk>/activity/', views.UserActivityAPIListView.as_view(), name='api_user_activity'),
+    path('api/create-countries/', views.CreateCountryListAPIView.as_view(), name='api_create_countries'),
     # generic
     path('', views.UserListView.as_view(), name='list'),
     path('<int:pk>/', views.UserDetailView.as_view(), name='detail'),

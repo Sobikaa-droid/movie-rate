@@ -1,20 +1,21 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.views import LogoutView
+from django.core.serializers import serialize
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Prefetch, Q, Avg
 from django.db.models.base import Model as Model
 from django.shortcuts import get_object_or_404
-from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 from django.views import generic
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics, serializers
 from rest_framework.views import APIView
 from itertools import chain
 import requests
+import json
 
 from .models import TunedUser, Country, UserFavoriteActivity, UserRatingActivity, UserReviewActivity, UserWatchLaterActivity
 from .serializers import CustomUserSerializer
@@ -35,6 +36,35 @@ class UserAPIViewSet(viewsets.ModelViewSet):
     serializer_class = CustomUserSerializer
     permission_classes = [custom_permissions.IsAuthenticatedAndUserOrReadOnly]
     pagination_class = ListPagination
+
+
+class UserActivityAPIListView(APIView):
+    pagination_class = ListPagination
+
+    def get(self, request, user_pk):
+        user_favorite_activity = UserFavoriteActivity.objects.filter(
+            user__pk=user_pk).select_related('favorite__movie')
+        user_review_activity = UserRatingActivity.objects.filter(
+            user__pk=user_pk).select_related('rating__movie')
+        user_rating_activity = UserReviewActivity.objects.filter(
+            user__pk=user_pk).select_related('review__movie')
+        user_wl_activity = UserWatchLaterActivity.objects.filter(
+            user__pk=user_pk).select_related('wl__movie')
+
+        activity_objects = sorted(
+            chain(user_favorite_activity,
+                  user_review_activity,
+                  user_rating_activity,
+                  user_wl_activity),
+            key=lambda x: x.created_at, reverse=True)
+        
+        data = json.loads(serialize('json', activity_objects))
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
+
 
 
 class UserListView(generic.ListView):
